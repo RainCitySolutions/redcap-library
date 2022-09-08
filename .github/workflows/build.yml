@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # OS additions
+      - name: Add to OS
+        run: |
+           sudo apt-get install memcached
+           
       # Checkout our code 
       - name: Checkout code
         uses: actions/checkout@v2
