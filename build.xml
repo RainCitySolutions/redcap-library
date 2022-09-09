@@ -30,39 +30,11 @@
 					<filterchain>
 						<replaceregexp>
 							<regexp
-								pattern="&quot;version&quot; : &quot;[0-9]+\.[0-9]+\.[0-9]+&quot;,"
+								pattern="&quot;version&quot; *: *&quot;[0-9]+\.[0-9]+\.[0-9]+&quot;,"
 								replace="&quot;version&quot; : &quot;${build.version}&quot;," />
 						</replaceregexp>
 					</filterchain>
 				</reflexive>
-            </then>
-        </if>
-        <if>
-            <available file="${project.basedir}/src/entryPoint.php" property="entrypoint_php_exists" />
-            <then>
-                <reflexive file="${project.basedir}/src/entryPoint.php">
-		            <filterchain>
-		                <replaceregexp>
-		                    <regexp
-		                        pattern="Version: [0-9]+\.[0-9]+\.[0-9]+"
-		                        replace="Version: ${build.version}" />
-		                </replaceregexp>
-		            </filterchain>
-		        </reflexive>
-            </then>
-        </if>
-        <if>
-            <available file="${project.basedir}/src/style.css" property="style_css_exists" />
-            <then>
-                <reflexive file="${project.basedir}/src/style.css">
-		            <filterchain>
-		                <replaceregexp>
-		                    <regexp
-		                        pattern="Version: [0-9]+\.[0-9]+\.[0-9]+"
-		                        replace="Version: ${build.version}" />
-		                </replaceregexp>
-		            </filterchain>
-		        </reflexive>
             </then>
         </if>
 	</target>
