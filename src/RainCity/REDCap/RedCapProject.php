@@ -172,12 +172,12 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportPdfFileOfInstruments()
      */
-    public function exportPdfFileOfInstruments($file = null, $recordId = null, $event = null, $form = null, $allRecords = null, $compactDisplay = null)
+    public function exportPdfFileOfInstruments($file = null, $recordId = null, $event = null, $form = null, $allRecords = null, $compactDisplay = null, $repeatInstance = null)
     {
         $result = '';
 
         try {
-            $result = parent::exportPdfFileOfInstruments($file, $recordId, $event, $form, $allRecords, $compactDisplay);
+            $result = parent::exportPdfFileOfInstruments($file, $recordId, $event, $form, $allRecords, $compactDisplay, $repeatInstance);
         }
         catch (PhpCapException $exception) {
         }
@@ -228,9 +228,9 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
         $dateRangeBegin = null,
         $dateRangeEnd = null,
         $csvDelimiter = ',',
-        $decimalCharacter = null
-
-        ) {
+        $decimalCharacter = null,
+        $exportBlankForGrayFormStatus = false
+    ) {
             $result = null;
 
             try {
