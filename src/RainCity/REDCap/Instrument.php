@@ -2,12 +2,13 @@
 namespace RainCity\REDCap;
 
 use RainCity\Logging\Logger;
+use Serializable;
 
 /**
  * Represents an instrument/form in REDCap.
  *
  */
-class Instrument implements \Serializable
+class Instrument implements Serializable
 {
     /*
      * The following fields are serialized, for storage in the instrument
@@ -298,6 +299,11 @@ class Instrument implements \Serializable
         return $this->events;
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     * @see Serializable::serialize()
+     */
     public function serialize(): string
     {
         $vars = get_object_vars($this);
@@ -310,6 +316,11 @@ class Instrument implements \Serializable
         return serialize($vars);
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     * @see Serializable::unserialize()
+     */
     public function unserialize($serialized)
     {
         $vars = unserialize($serialized);
