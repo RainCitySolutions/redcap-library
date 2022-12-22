@@ -57,26 +57,9 @@ class Instrument implements Serializable
         $this->instrumentName = $instrumentName;
         $this->instrumentLabel = $instrumentLabel;
 
-        $exportFieldNames = array();
-        foreach ($fieldNames as $entry) {
-            if (!array_key_exists($entry['original_field_name'], $exportFieldNames)) {
-                $exportFieldNames[$entry['original_field_name']] = array();
-            }
-            $exportFieldNames[$entry['original_field_name']][] = $entry['export_field_name'];
-        }
+        $exportFieldNames = $this->readExportFieldNames($fieldNames);
 
-        foreach($metadata as $field) {
-            if ($instrumentName === $field['form_name']) {
-                // Some fields, such as descriptive, aren't in the exported
-                // field list but they are in the metadata
-                if (isset($exportFieldNames[$field['field_name']])) {
-                    foreach ($exportFieldNames[$field['field_name']] as $exportField) {
-                        $field['field_name'] = $exportField;
-                        $this->addField(new Field($field));
-                    }
-                }
-            }
-        }
+        $this->readMetadata($metadata, $instrumentName, $exportFieldNames);
 
         $this->makeSingularCheckboxesOptional();
 
@@ -86,6 +69,34 @@ class Instrument implements Serializable
         foreach($eventMappings as $entry) {
             if ($instrumentName === $entry['form']) {
                 $this->events[] = $entry['unique_event_name'];
+            }
+        }
+    }
+
+    private function readExportFieldNames(array $fieldNames): array {
+        $exportFieldNames = array();
+
+        foreach ($fieldNames as $entry) {
+            if (!array_key_exists($entry['original_field_name'], $exportFieldNames)) {
+                $exportFieldNames[$entry['original_field_name']] = array();
+            }
+            $exportFieldNames[$entry['original_field_name']][] = $entry['export_field_name'];
+        }
+
+        return $exportFieldNames;
+    }
+
+    private function readMetadata(array $metadata, string $instrumentName, array $exportFieldNames) {
+        foreach($metadata as $field) {
+            if ($instrumentName === $field['form_name'] &&
+                // Some fields, such as descriptive, aren't in the exported
+                // field list but they are in the metadata
+                isset($exportFieldNames[$field['field_name']]) )
+            {
+                foreach ($exportFieldNames[$field['field_name']] as $exportField) {
+                    $field['field_name'] = $exportField;
+                    $this->addField(new Field($field));
+                }
             }
         }
     }
@@ -286,11 +297,11 @@ class Instrument implements Serializable
                 $this->hasInputFields = true;
             }
 
-            if (!in_array($fieldType, Field::IGNORED_FIELD_TYPES) ) {
-                if (!in_array($fieldType, $this->skippedTypes)) {
-                    $this->skippedTypes[] = $fieldType;
-                    $this->logger->debug("Skipping field type {$fieldType} in check for required fields");
-                }
+            if (!in_array($fieldType, Field::IGNORED_FIELD_TYPES) &&
+                !in_array($fieldType, $this->skippedTypes) )
+            {
+                $this->skippedTypes[] = $fieldType;
+                $this->logger->debug("Skipping field type {$fieldType} in check for required fields");
             }
         }
     }
@@ -354,7 +365,7 @@ class Instrument implements Serializable
         foreach ($fieldnames as $fieldname) {
             $matches = array();
             // is this a checkbox field?
-            if (preg_match ('/^(.*)___\d{1,}$/', $fieldname, $matches)) {
+            if (preg_match ('/^(.*)___\d+$/', $fieldname, $matches)) {
                 $fieldname = $matches[1];
 
                 if (!in_array($fieldname, $result)) {

@@ -10,14 +10,17 @@ use RainCity\TestHelper\ReflectionHelper;
  */
 class InstrumentRecordTest extends REDCapTestCase
 {
+    private const UNEXPECTED_COMPLETED_COUNT = 'Unexpected completed count';
+    private const UNEXPECTED_REQUIRED_COUNT = 'Unexpected required count';
+    private const BOB_EMAIL_ADDRESS = 'bob@myco.com';
+    private const JANE_FULL_NAME = 'Jane Doe';
+    private const TIMESTAMP_SUFFIX = '_timestamp';
+
     /** @var InstrumentRecord instance used for testing */
     private $testObj;
 
     /** @var Instrument instance used for testing */
     private $testInstrument;
-
-    /** @var Record instance used for testing */
-    private $testRecord;
 
     private function createMockStatus(string $method, $retValue): SurveyStatus {
         $mock = $this->createMock(SurveyStatus::class);
@@ -40,40 +43,40 @@ class InstrumentRecordTest extends REDCapTestCase
     }
 
     public function testCtor_withNextInstrument() {
-        $testInstrument = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $nextInstrument = $this->createInstrument(static::CONSENT_FORM);
+        $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
+        $nextInst = $this->createInstrument(static::CONSENT_FORM);
 
-        $testInstrument->setNextInstrument($nextInstrument);
+        $testInst->setNextInstrument($nextInst);
 
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $testInstrument);
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
 
-        $prop = ReflectionHelper::getObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $testObj);
+        $prop = ReflectionHelper::getObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $instRcd);
 
         $this->assertNotNull($prop);
         $this->assertInstanceOf(InstrumentRecord::class, $prop);
 
         $inst = $prop->getInstrument();
-        $this->assertEquals($nextInstrument, $inst);
+        $this->assertEquals($nextInst, $inst);
     }
 
     public function testGetStatus_classic() {
         $this->useClassicProject();
 
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
 
-        $status = $testObj->getStatus();
+        $status = $instRcd->getStatus();
 
         $this->assertNotNull($status);
         $this->assertInstanceOf(SurveyStatus::class, $status);
     }
 
     public function testGetStatus_events() {
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
 
         $instrumentEvents = $this->testInstrument->getEvents();
 
         foreach ($instrumentEvents as $event) {
-            $status = $testObj->getStatus($event);
+            $status = $instRcd->getStatus($event);
 
             $this->assertNotNull($status);
             $this->assertInstanceOf(SurveyStatus::class, $status);
@@ -220,17 +223,17 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $testInst, static::TEST_RCD_4_ID);
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst, static::TEST_RCD_4_ID);
 
         $completedCnt = count($knownDataFields);
         $requiredCnt = count($testInst->getRequiredFormFieldNames()) - 1; // don't include the record id field
 
         ReflectionHelper::setObjectProperty(Instrument::class, 'isCAT', false, $this->testInstrument);
 
-        $result = $testObj->getCompletedFieldCounts(static::TEST_EVENT_A);
+        $result = $instRcd->getCompletedFieldCounts(static::TEST_EVENT_A);
 
-        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), 'Unexpected completed count');
-        $this->assertEquals($requiredCnt, $result->getRequiredCount(), 'Unexpected required count');
+        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), self::UNEXPECTED_COMPLETED_COUNT);
+        $this->assertEquals($requiredCnt, $result->getRequiredCount(), self::UNEXPECTED_REQUIRED_COUNT);
     }
 
     public function testGetCompletedFieldCounts_notCatWithNext() {
@@ -257,8 +260,8 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $result = $topTestRcd->getCompletedFieldCounts(static::TEST_EVENT_A);
 
-        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), 'Unexpected completed count');
-        $this->assertEquals($requiredCnt, $result->getRequiredCount(), 'Unexpected required count');
+        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), self::UNEXPECTED_COMPLETED_COUNT);
+        $this->assertEquals($requiredCnt, $result->getRequiredCount(), self::UNEXPECTED_REQUIRED_COUNT);
 
         $nextTestRcd = $topTestRcd->getNextInstrumentRecord();
 
@@ -269,8 +272,8 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $result = $nextTestRcd->getCompletedFieldCounts(static::TEST_EVENT_A);
 
-        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), 'Unexpected completed count');
-        $this->assertEquals($requiredCnt, $result->getRequiredCount(), 'Unexpected required count');
+        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), self::UNEXPECTED_COMPLETED_COUNT);
+        $this->assertEquals($requiredCnt, $result->getRequiredCount(), self::UNEXPECTED_REQUIRED_COUNT);
     }
 
     public function testGetCumulativeFieldCounts_notCatWithNext() {
@@ -299,8 +302,8 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $result = $localTestObj->getCumulativeFieldCounts(static::TEST_EVENT_A);
 
-        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), 'Unexpected completed count');
-        $this->assertEquals($requiredCnt, $result->getRequiredCount(), 'Unexpected required count');
+        $this->assertGreaterThanOrEqual($completedCnt, $result->getCompletedCount(), self::UNEXPECTED_COMPLETED_COUNT);
+        $this->assertEquals($requiredCnt, $result->getRequiredCount(), self::UNEXPECTED_REQUIRED_COUNT);
     }
 
     public function testInitRequiredFieldCounts_classic_noRequiredFields() {
@@ -484,38 +487,38 @@ class InstrumentRecordTest extends REDCapTestCase
     }
 */
     public function testGetFieldValue_withNextInstrument() {
-        $testInstrument = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $nextInstrument = $this->createInstrument(static::CONSENT_FORM);
+        $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
+        $nextInst = $this->createInstrument(static::CONSENT_FORM);
 
-        $testInstrument->setNextInstrument($nextInstrument);
+        $testInst->setNextInstrument($nextInst);
 
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $testInstrument);
-        $nextObj = $testObj->getNextInstrumentRecord();
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $nextObj = $instRcd->getNextInstrumentRecord();
 
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => 'bob@myco.com')), $testObj);
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => 'Jane Doe')), $nextObj);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => self::BOB_EMAIL_ADDRESS)), $instRcd);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => self::JANE_FULL_NAME)), $nextObj);
 
-        $this->assertEquals('Bob', $testObj->getFieldValue(self::SHORTNAME_FIELD));
-        $this->assertEquals('bob@myco.com', $testObj->getFieldValue(self::EMAIL_FIELD));
-        $this->assertEquals('n', $testObj->getFieldValue(self::CONSENT_FIELD));
-        $this->assertEquals('Jane Doe', $testObj->getFieldValue(self::FULLNAME_FIELD));
+        $this->assertEquals('Bob', $instRcd->getFieldValue(self::SHORTNAME_FIELD));
+        $this->assertEquals(self::BOB_EMAIL_ADDRESS, $instRcd->getFieldValue(self::EMAIL_FIELD));
+        $this->assertEquals('n', $instRcd->getFieldValue(self::CONSENT_FIELD));
+        $this->assertEquals(self::JANE_FULL_NAME, $instRcd->getFieldValue(self::FULLNAME_FIELD));
     }
 
     public function testGetREDCapArray_withNextInstrument() {
-        $testInstrument = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $nextInstrument = $this->createInstrument(static::CONSENT_FORM);
+        $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
+        $nextInst = $this->createInstrument(static::CONSENT_FORM);
 
-        $testInstrument->setNextInstrument($nextInstrument);
+        $testInst->setNextInstrument($nextInst);
 
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $testInstrument);
-        $nextObj = $testObj->getNextInstrumentRecord();
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $nextObj = $instRcd->getNextInstrumentRecord();
 
-        ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_2_ID, $testObj);
+        ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_2_ID, $instRcd);
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_2_ID, $nextObj);
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => 'bob@myco.com')), $testObj);
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => 'Jane Doe')), $nextObj);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => self::BOB_EMAIL_ADDRESS)), $instRcd);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => self::JANE_FULL_NAME)), $nextObj);
 
-        $redcapArray = $testObj->getREDCapArray();
+        $redcapArray = $instRcd->getREDCapArray();
 
         $this->assertIsArray($redcapArray);
         $this->assertCount(1, $redcapArray);
@@ -533,28 +536,28 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->assertEquals(self::TEST_RCD_2_ID, $redcapRcd[self::RCD_ID_FIELD]);
         $this->assertEquals(self::TEST_EVENT_A, $redcapRcd[Record::REDCAP_EVENT_NAME]);
         $this->assertEquals('Bob', $redcapRcd[self::SHORTNAME_FIELD]);
-        $this->assertEquals('bob@myco.com', $redcapRcd[self::EMAIL_FIELD]);
+        $this->assertEquals(self::BOB_EMAIL_ADDRESS, $redcapRcd[self::EMAIL_FIELD]);
         $this->assertEquals('n', $redcapRcd[self::CONSENT_FIELD]);
-        $this->assertEquals('Jane Doe', $redcapRcd[self::FULLNAME_FIELD]);
+        $this->assertEquals(self::JANE_FULL_NAME, $redcapRcd[self::FULLNAME_FIELD]);
     }
 
     public function testGetREDCapArray_withClassicProject() {
         $this->setCallback('exportEvents', function() { return null; } );
 
-        $testInstrument = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $nextInstrument = $this->createInstrument(static::CONSENT_FORM);
+        $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
+        $nextInst = $this->createInstrument(static::CONSENT_FORM);
 
-        $testInstrument->setNextInstrument($nextInstrument);
+        $testInst->setNextInstrument($nextInst);
 
-        $testObj = new InstrumentRecord($this->stubRedcapProj, $testInstrument);
-        $nextObj = $testObj->getNextInstrumentRecord();
+        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $nextObj = $instRcd->getNextInstrumentRecord();
 
-        ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_3_ID, $testObj);
+        ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_3_ID, $instRcd);
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_3_ID, $nextObj);
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => 'bob@myco.com'), $testObj);
-        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => 'Jane Doe'), $nextObj);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => self::BOB_EMAIL_ADDRESS), $instRcd);
+        ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array(self::CONSENT_FIELD => 'n', self::FULLNAME_FIELD => self::JANE_FULL_NAME), $nextObj);
 
-        $redcapArray = $testObj->getREDCapArray();
+        $redcapArray = $instRcd->getREDCapArray();
 
         $this->assertIsArray($redcapArray);
         $this->assertCount(1, $redcapArray);
@@ -571,9 +574,9 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $this->assertEquals(self::TEST_RCD_3_ID, $redcapRcd[self::RCD_ID_FIELD]);
         $this->assertEquals('Bob', $redcapRcd[self::SHORTNAME_FIELD]);
-        $this->assertEquals('bob@myco.com', $redcapRcd[self::EMAIL_FIELD]);
+        $this->assertEquals(self::BOB_EMAIL_ADDRESS, $redcapRcd[self::EMAIL_FIELD]);
         $this->assertEquals('n', $redcapRcd[self::CONSENT_FIELD]);
-        $this->assertEquals('Jane Doe', $redcapRcd[self::FULLNAME_FIELD]);
+        $this->assertEquals(self::JANE_FULL_NAME, $redcapRcd[self::FULLNAME_FIELD]);
     }
 
 
@@ -584,12 +587,12 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $testObj = new InstrumentRecord(
+        $instRcd = new InstrumentRecord(
             $this->stubRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
             static::TEST_RCD_2_ID);
 
-        $timestamp = $testObj->getTimestamp();
+        $timestamp = $instRcd->getTimestamp();
 
         $this->assertNull($timestamp);
     }
@@ -598,16 +601,16 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->useClassicProject();
 
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID), null, array(static::CONSENT_FORM));
-        $testRcd[0][static::CONSENT_FORM.'_timestamp'] = '';
+        $testRcd[0][static::CONSENT_FORM.self::TIMESTAMP_SUFFIX] = '';
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $testObj = new InstrumentRecord(
+        $instRcd = new InstrumentRecord(
             $this->stubRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
             static::TEST_RCD_4_ID);
 
-        $timestamp = $testObj->getTimestamp();
+        $timestamp = $instRcd->getTimestamp();
 
         $this->assertNull($timestamp);
     }
@@ -618,16 +621,16 @@ class InstrumentRecordTest extends REDCapTestCase
         $testDateTime = $this->generateRandomDateTime();
 
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID), null, array(static::CONSENT_FORM));
-        $testRcd[0][static::CONSENT_FORM.'_timestamp'] = $testDateTime->format(Record::REDCAP_TIMESTAMP_FORMAT); // '2019-06-15 17:45:07';
+        $testRcd[0][static::CONSENT_FORM.self::TIMESTAMP_SUFFIX] = $testDateTime->format(Record::REDCAP_TIMESTAMP_FORMAT); // '2019-06-15 17:45:07';
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $testObj = new InstrumentRecord(
+        $instRcd = new InstrumentRecord(
             $this->stubRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
             static::TEST_RCD_4_ID);
 
-        $timestamp = $testObj->getTimestamp();
+        $timestamp = $instRcd->getTimestamp();
 
         $this->assertNotNull($timestamp);
         $this->assertEquals($testDateTime, $timestamp);
@@ -643,18 +646,18 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_3_ID), null, array(static::HISTORY_FORM));
         foreach ($testDateTimeArray as $event => $timestamp) {
-            $testRcd[array_search($event, array_keys($testDateTimeArray))][static::HISTORY_FORM.'_timestamp'] = $timestamp->format(Record::REDCAP_TIMESTAMP_FORMAT);
+            $testRcd[array_search($event, array_keys($testDateTimeArray))][static::HISTORY_FORM.self::TIMESTAMP_SUFFIX] = $timestamp->format(Record::REDCAP_TIMESTAMP_FORMAT);
         }
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $testObj = new InstrumentRecord(
+        $instRcd = new InstrumentRecord(
             $this->stubRedcapProj,
             $this->createInstrument(static::HISTORY_FORM),
             static::TEST_RCD_3_ID);
 
         foreach ($testDateTimeArray as $event => $testTimestamp) {
-            $timestamp = $testObj->getTimestamp($event);
+            $timestamp = $instRcd->getTimestamp($event);
 
             $this->assertNotNull($timestamp);
             $this->assertEquals($testTimestamp, $timestamp);

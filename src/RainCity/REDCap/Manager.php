@@ -119,7 +119,7 @@ class Manager
      *      instruments into.
      */
     private function loadInstruments(Project $project) {
-        $methodLogger = new MethodLogger();
+        $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
         $fieldnames = $this->redcapProject->exportFieldNames();
         $metadata = $this->redcapProject->exportMetadata();
@@ -139,7 +139,7 @@ class Manager
      *      the events into.
      */
     private function loadEvents(Project $project) {
-        $methodLogger = new MethodLogger();
+        $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
         $events = $this->redcapProject->exportEvents();
         foreach ($events as $event) {

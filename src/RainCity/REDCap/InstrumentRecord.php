@@ -79,18 +79,18 @@ class InstrumentRecord extends Record
      *      instrument or the record is not tracking the event.
      */
     public function getStatus(string $event = null): SurveyStatus {
-        $status = null;
+        $surveyStatus = null;
 
         if ($this->projectUsesEvents()) {
             $this->validateEvent($event, $this->status);
 
-            $status = $this->status[$event];
+            $surveyStatus = $this->status[$event];
         }
         else {
-            $status = $this->status;
+            $surveyStatus = $this->status;
         }
 
-        return $status;
+        return $surveyStatus;
     }
 
     /**
@@ -357,9 +357,7 @@ class InstrumentRecord extends Record
     private function matchesBranching($branching, ?string $event = null): bool {
         $parser = new BranchingParser($branching);
 
-        $matches = $parser->matches($this);
-
-        return $matches;
+        return $parser->matches($this);
     }
 
     /**

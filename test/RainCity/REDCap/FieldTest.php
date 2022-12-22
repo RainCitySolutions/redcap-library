@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 class FieldTest extends TestCase
 {
     const TEST_INSTRUMENT_NAME = 'test_instrument';
+    const IS_REQUIRED_NOT_AS_EXPECTED = 'isRequired() not as expected';
+    const IS_OPTIONAL_NOT_AS_EXPECTED = 'isOptional() not as expected';
 
     protected function getTestField(): array {
         return array (
@@ -42,13 +44,13 @@ class FieldTest extends TestCase
     public function testConstructor_noArg()
     {
         $this->expectException("ArgumentCountError");
-        new Field();
+        new Field();    // NOSONAR
     }
 
     public function testConstructor_invalidArray()
     {
         $this->expectException("InvalidArgumentException");
-        new Field(array());
+        new Field(array()); // NOSONAR
     }
 
     public function testConstructor()
@@ -63,8 +65,8 @@ class FieldTest extends TestCase
         $this->assertEquals($testField['branching_logic'], $field->getBranching());
         $this->assertEquals($testField['field_note'], $field->getNote());
 
-        $this->assertTrue($field->isRequired(), 'isRequired() not as expected');
-        $this->assertFalse($field->isOptional(), 'isOptional() not as expected');
+        $this->assertTrue($field->isRequired(), self::IS_REQUIRED_NOT_AS_EXPECTED );
+        $this->assertFalse($field->isOptional(), self::IS_OPTIONAL_NOT_AS_EXPECTED);
         $this->assertFalse($field->isCAT(), 'isCAT() not as expected');
         $this->assertFalse($field->hasBranching(), 'hasBranching() not as expected');
     }
@@ -76,8 +78,8 @@ class FieldTest extends TestCase
 
         $field = new Field($localField);
 
-        $this->assertTrue($field->isRequired(), 'isRequired() not as expected');
-        $this->assertFalse($field->isOptional(), 'isOptional() not as expected');
+        $this->assertTrue($field->isRequired(), self::IS_REQUIRED_NOT_AS_EXPECTED);
+        $this->assertFalse($field->isOptional(), self::IS_OPTIONAL_NOT_AS_EXPECTED);
     }
 
     public function testImplicitOptional_branchingLogic()
@@ -87,8 +89,8 @@ class FieldTest extends TestCase
 
         $field = new Field($localField);
 
-        $this->assertFalse($field->isRequired(), 'isRequired() not as expected');
-        $this->assertTrue($field->isOptional(), 'isOptional() not as expected');
+        $this->assertFalse($field->isRequired(), self::IS_REQUIRED_NOT_AS_EXPECTED);
+        $this->assertTrue($field->isOptional(), self::IS_OPTIONAL_NOT_AS_EXPECTED);
         $this->assertTrue($field->hasBranching(), 'hasBranching() not as expected');
     }
 
@@ -99,8 +101,8 @@ class FieldTest extends TestCase
 
         $field = new Field($localField);
 
-        $this->assertFalse($field->isRequired(), 'isRequired() not as expected');
-        $this->assertTrue($field->isOptional(), 'isOptional() not as expected');
+        $this->assertFalse($field->isRequired(), self::IS_REQUIRED_NOT_AS_EXPECTED);
+        $this->assertTrue($field->isOptional(), self::IS_OPTIONAL_NOT_AS_EXPECTED);
     }
 
     public function testCAT()

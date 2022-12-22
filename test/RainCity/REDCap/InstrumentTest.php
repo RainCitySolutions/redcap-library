@@ -12,6 +12,8 @@ use RainCity\TestHelper\ReflectionHelper;
  */
 class InstrumentTest extends REDCapTestCase
 {
+    private const MISSED_INPUT_FIELD = 'Missed input field';
+
     const TEST_FORM_NAME = 'testName';
     const TEST_FORM_LABEL = 'testLabel';
 
@@ -36,13 +38,13 @@ class InstrumentTest extends REDCapTestCase
 
     public function testCtor_invalidArg() {
         $this->expectException('TypeError');
-        new Instrument((object)[], 'label', array(), array());
+        new Instrument((object)[], 'label', array(), array());  // NOSONAR - ignore useless object instantiation
 
         $this->expectException('TypeError');
-        new Instrument('test', 4.9, array(), array());
+        new Instrument('test', 4.9, array(), array());  // NOSONAR - ignore useless object instantiation
 
         $this->expectException('TypeError');
-        new Instrument('test', 'label', array(), array());
+        new Instrument('test', 'label', array(), array());  // NOSONAR - ignore useless object instantiation
     }
 
     public function testCtor_withoutEvents() {
@@ -287,7 +289,7 @@ class InstrumentTest extends REDCapTestCase
 
         $this->assertArrayHasKey($mockField->getName(), $reqFields);
         $this->assertArrayNotHasKey($mockField->getName(), $optFields);
-        $this->assertTrue($hasInput, 'Missed input field');
+        $this->assertTrue($hasInput, self::MISSED_INPUT_FIELD);
         $this->assertFalse($isCAT, 'CAT flag should be false');
     }
 
@@ -303,7 +305,7 @@ class InstrumentTest extends REDCapTestCase
 
         $this->assertArrayNotHasKey($mockField->getName(), $reqFields);
         $this->assertArrayHasKey($mockField->getName(), $optFields);
-        $this->assertTrue($hasInput, 'Missed input field');
+        $this->assertTrue($hasInput, self::MISSED_INPUT_FIELD);
         $this->assertFalse($isCAT, 'CAT flag should be false');
     }
 
@@ -320,7 +322,7 @@ class InstrumentTest extends REDCapTestCase
 
         $this->assertArrayNotHasKey($mockField->getName(), $reqFields);
         $this->assertArrayHasKey($mockField->getName(), $optFields);
-        $this->assertTrue($hasInput, 'Missed input field');
+        $this->assertTrue($hasInput, self::MISSED_INPUT_FIELD);
         $this->assertTrue($isCAT, 'CAT flag should be true');
     }
 
@@ -335,7 +337,7 @@ class InstrumentTest extends REDCapTestCase
 
         $this->assertArrayNotHasKey($mockField->getName(), $reqFields);
         $this->assertArrayHasKey($mockField->getName(), $optFields);
-        $this->assertTrue($hasInput, 'Missed input field');
+        $this->assertTrue($hasInput, self::MISSED_INPUT_FIELD);
     }
 
     public function testAddField_optionalTypeNonInputField() {
@@ -381,7 +383,7 @@ class InstrumentTest extends REDCapTestCase
 
         $events = $this->testObj->getEvents();
 
-        $this->assertIsArray($events, 'return value from getEvents() should be an array').
+        $this->assertIsArray($events, 'return value from getEvents() should be an array');
         $this->assertEquals($testEvents, $events);
     }
 

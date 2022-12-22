@@ -23,13 +23,13 @@ class EventTest extends TestCase
     public function testConstructor_noArg()
     {
         $this->expectException("ArgumentCountError");
-        new Event();
+        new Event();   // NOSONAR - testing
     }
 
     public function testConstructor_emptyArray()
     {
         $this->expectException("InvalidArgumentException");
-        new Event(array());
+        new Event(array()); // NOSONAR - testing
     }
 
     public function testConstructor()

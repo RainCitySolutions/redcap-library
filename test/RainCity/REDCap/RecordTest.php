@@ -23,7 +23,7 @@ class RecordTest extends REDCapTestCase
     public function testCtor_noArg()
     {
         $this->expectException("ArgumentCountError");
-        new Record();
+        new Record();   // NOSONAR - ignore useless object instantiation
     }
 
     /**
@@ -32,7 +32,7 @@ class RecordTest extends REDCapTestCase
     public function testCtor_invalidArg()
     {
         $this->expectException("TypeError");
-        new Record((object)[], 'fields');
+        new Record((object)[], 'fields');   // NOSONAR - ignore useless object instantiation
     }
 
     /**
@@ -1845,7 +1845,7 @@ class RecordTest extends REDCapTestCase
             ->with($this->callback(function($saveRcd) use ($testRcd) {
                 $testRcd[0][self::RCD_ID_FIELD] = static::getCurrentRcdId();
 
-                return ReflectionHelper::arraysTheSame($testRcd, $saveRcd);
+                return $testRcd === $saveRcd;
             }) );
 
         $obj->save();
@@ -1894,7 +1894,7 @@ class RecordTest extends REDCapTestCase
                 $testRcd[$key][self::RCD_ID_FIELD] = static::getCurrentRcdId();
             }
 
-            return ReflectionHelper::arraysTheSame($testRcd, $saveRcd);
+            return $testRcd === $saveRcd;
         }) );
 
         $obj->save();

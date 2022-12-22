@@ -40,15 +40,15 @@ class ProjectTest extends REDCapTestCase
 
     public function testCtor_invalidArg() {
         $this->expectException("ArgumentCountError");
-        new Project();
+        new Project();  // NOSONAR - ignore useless object instantiation
 
         $this->expectException("TypeError");
-        new Project("test");
+        new Project("test");    // NOSONAR - ignore useless object instantiation
     }
 
     public function testCtor_noREDCapData() {
         $this->expectException("InvalidArgumentException");
-        new Project(array());
+        new Project(array());   // NOSONAR - ignore useless object instantiation
     }
 
     public function testCtor_() {

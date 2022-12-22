@@ -28,29 +28,22 @@ class InstrumentMgr
     }
 
     private function loadInstruments() {
-        $methodLogger = new MethodLogger();
+        $methodLogger = new MethodLogger(); //NOSONAR
 
         $this->instruments = isset($this->cache) ? $this->cache->get('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl()) : null;
 
         if (isset($this->instruments)) {
             // Loaded from the cache so initialize references to objects
-            foreach ($this->instruments as $instrument) {
-                foreach ($instrument->getRequiredFields() as $field) {
-                    $field->setForm($instrument);
-                }
-                foreach ($instrument->getOptionalFields() as $field) {
-                    $field->setForm($instrument);
-                }
-            }
+            $this->initializeInstrumentReferences($this->instruments);
         }
         else {
-            $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap instruments: %s');
+            $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap instruments: %s');   // NOSONAR
 
-            $instruments = $this->redcapProject->exportInstruments();
-            foreach ($instruments as $name => $label) {
+            $localInstruments = $this->redcapProject->exportInstruments();
+            foreach ($localInstruments as $name => $label) {
                 $this->instruments[$name] = new Instrument($name, $label);
             }
-            unset($instruments);
+            unset($localInstruments);
 
             $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap metadata: %s');
 
@@ -72,6 +65,18 @@ class InstrumentMgr
 
             if (isset($this->cache)) {
                 $this->cache->set('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl(), $this->instruments);
+            }
+        }
+    }
+
+    private function initializeInstrumentReferences(array $instruments): void {
+        foreach ($instruments as $instrument) {
+            foreach ($instrument->getRequiredFields() as $field) {
+                $field->setForm($instrument);
+            }
+
+            foreach ($instrument->getOptionalFields() as $field) {
+                $field->setForm($instrument);
             }
         }
     }

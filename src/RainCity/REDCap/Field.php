@@ -92,7 +92,7 @@ class Field implements \Serializable
         $matches = array();
 
         if ("checkbox" == $this->type &&
-            preg_match ('/^(.*)___\d{1,}$/', $this->name, $matches))
+            preg_match ('/^(.*)___\d+$/', $this->name, $matches))
         {
             $fieldname = $matches[1];
         }

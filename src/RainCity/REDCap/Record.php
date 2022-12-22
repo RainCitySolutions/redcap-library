@@ -236,7 +236,7 @@ class Record
 
         // If the record is empty, don't do anything.
         if (!empty($rcd)) {
-            $recordId = null;
+            $rcdId = null;
 
             if (
                 ($this->projectUsesEvents() && count($this->validEvents) < count($rcd)) ||
@@ -252,7 +252,7 @@ class Record
                  * Walk through the top level array and verify that each inner
                  * entry is an array.
                  */
-                array_walk($rcd, function ($entry, $ndx) use (&$isValid, &$recordId) {
+                array_walk($rcd, function ($entry, $ndx) use (&$isValid, &$rcdId) {
                     if (is_numeric($ndx) && is_array($entry)) {
                         /*
                          * Walk through the inner array and verify that the key
@@ -291,14 +291,14 @@ class Record
                          * record id and event name
                          */
                         if (array_key_exists($this->recordIdField, $entry)) {
-                            if (isset($recordId)) {
-                                if ($entry[$this->recordIdField] !== $recordId) {
+                            if (isset($rcdId)) {
+                                if ($entry[$this->recordIdField] !== $rcdId) {
                                     $isValid = false;
                                     $this->logger->warning('Found issue with REDCap record. More than one record present.');
                                 }
                             }
                             else {
-                                $recordId = $entry[$this->recordIdField];
+                                $rcdId = $entry[$this->recordIdField];
                             }
 
                             if ($this->projectUsesEvents() && !array_key_exists(Record::REDCAP_EVENT_NAME, $entry)) {
@@ -770,7 +770,7 @@ class Record
         foreach ($fieldsToExamine as $fieldName => $value) {
             $matches = array();
             // is this a checkbox field?
-            if (preg_match ('/^(.*)___\d{1,}$/', $fieldName, $matches)) {
+            if (preg_match ('/^(.*)___\d+$/', $fieldName, $matches)) {
                 $fieldName = $matches[1];
 
                 if (in_array($fieldName, $fieldsOfInterest)) {
