@@ -4,9 +4,18 @@ namespace RainCity\REDCap;
 class Field implements \Serializable
 {
     const REQUIRED_FIELD_TYPES = array('yesno', 'truefalse', 'radio', 'text', 'checkbox'); // 'file'?
-    const IGNORED_FIELD_TYPES = array('descriptive', 'calc', 'file');
+    const IGNORED_FIELD_TYPES = array('descriptive', 'calc', 'file', 'dropdown', 'notes');
     const NONINPUT_FIELD_TYPES = array('descriptive', 'calc', 'file');
     const OPTIONAL_INPUT_FIELD_TYPES = array('notes');
+    const MINIMUM_REDCAP_FIELD_SET = array(
+        'form_name',
+        'field_name',
+        'field_type',
+        'branching_logic',
+        'field_note',
+        'required_field'
+        );
+
 
     private $formName;
     private $name;
@@ -20,7 +29,7 @@ class Field implements \Serializable
 
     public function __construct(array $data) {
         // Check that the data array contains a minimal set of REDCap fields
-        if (!empty(array_diff(array('form_name', 'field_name', 'field_type', 'branching_logic', 'field_note', 'required_field'), array_keys($data))) ) {
+        if (!empty(array_diff(self::MINIMUM_REDCAP_FIELD_SET, array_keys($data))) ) {
             throw new \InvalidArgumentException('Array passed is not a valid REDCap field');
         }
 

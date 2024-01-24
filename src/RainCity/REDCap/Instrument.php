@@ -301,7 +301,6 @@ class Instrument implements Serializable
                 !in_array($fieldType, $this->skippedTypes) )
             {
                 $this->skippedTypes[] = $fieldType;
-                $this->logger->debug("Skipping field type {$fieldType} in check for required fields");
             }
         }
     }
