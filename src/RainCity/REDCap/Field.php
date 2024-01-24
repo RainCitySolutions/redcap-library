@@ -1,8 +1,12 @@
 <?php
 namespace RainCity\REDCap;
 
+use RainCity\SerializeAsArrayTrait;
+
 class Field implements \Serializable
 {
+    use SerializeAsArrayTrait;
+
     const REQUIRED_FIELD_TYPES = array('yesno', 'truefalse', 'radio', 'text', 'checkbox'); // 'file'?
     const IGNORED_FIELD_TYPES = array('descriptive', 'calc', 'file', 'dropdown', 'notes');
     const NONINPUT_FIELD_TYPES = array('descriptive', 'calc', 'file');
@@ -107,31 +111,5 @@ class Field implements \Serializable
         }
 
         return $fieldname;
-    }
-
-    public function serialize(): string
-    {
-        $vars = get_object_vars($this);
-
-        return serialize($vars);
-    }
-
-    public function unserialize($serialized)
-    {
-        $vars = unserialize($serialized);
-
-        foreach ($vars as $var => $value) {
-            /**
-             * Only set values for properties of the object.
-             *
-             * Generally this will be the case but this accounts for the
-             * possiblity that a field may be removed from the class in the
-             * future.
-             */
-            if (property_exists(__CLASS__, $var))
-            {
-                $this->$var = $value;
-            }
-        }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace RainCity\REDCap;
 
+use RainCity\SerializeAsArrayTrait;
 use RainCity\Logging\Logger;
 use Serializable;
 
@@ -10,6 +11,11 @@ use Serializable;
  */
 class Instrument implements Serializable
 {
+    use SerializeAsArrayTrait {
+        __serialize as protected traitSerialize;
+        __unserialize as protected traitUnserialize;
+    }
+
     /*
      * The following fields are serialized, for storage in the instrument
      * cache as they are generic to all records/users.
@@ -311,49 +317,6 @@ class Instrument implements Serializable
 
     /**
      *
-     * {@inheritDoc}
-     * @see Serializable::serialize()
-     */
-    public function serialize(): string
-    {
-        $vars = get_object_vars($this);
-
-        // Don't persist these vars
-        unset($vars['logger']);
-        unset($vars['nextInstrument']);
-        unset($vars['skippedTypes']);
-
-        return serialize($vars);
-    }
-
-    /**
-     *
-     * {@inheritDoc}
-     * @see Serializable::unserialize()
-     */
-    public function unserialize($serialized)
-    {
-        $vars = unserialize($serialized);
-
-        foreach ($vars as $var => $value) {
-            /**
-             * Only set values for properties of the object.
-             *
-             * Generally this will be the case but this accounts for the
-             * possiblity that a field may be removed from the class in the
-             * future.
-             */
-            if (property_exists(__CLASS__, $var))
-            {
-                $this->$var = $value;
-            }
-        }
-
-        $this->initLogger();
-    }
-
-    /**
-     *
      * @param string[] $fieldnames
      *
      * @return string[]
@@ -377,5 +340,24 @@ class Instrument implements Serializable
         }
 
         return $result;
+    }
+
+    public function __serialize(): array
+    {
+        $vars = $this->traitSerialize();
+
+        // Don't persist these vars
+        unset($vars['logger']);
+        unset($vars['nextInstrument']);
+        unset($vars['skippedTypes']);
+
+        return $vars;
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->traitUnserialize($data);
+
+        $this->initLogger();
     }
 }
