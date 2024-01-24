@@ -26,9 +26,23 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     /** @var string */
     private $cacheKey;
 
-    public function __construct($apiUrl, $apiToken, $sslVerify = true, $caCertificateFile = null, $errorHandler = null, $connection = null)
+    public function __construct(
+        $apiUrl,
+        $apiToken,
+        $sslVerify = true,
+        $caCertificateFile = null,
+        $errorHandler = null,
+        $connection = null
+        )
     {
-        parent::__construct($apiUrl, $apiToken, $sslVerify, $caCertificateFile, $errorHandler ?? new RedCapErrorHandler(), $connection);
+        parent::__construct(
+            $apiUrl,
+            $apiToken,
+            $sslVerify,
+            $caCertificateFile,
+            $errorHandler ?? new RedCapErrorHandler(),
+            $connection
+            );
 
         $this->cache = DataCache::instance();
         $this->cache->setDefaultTTL(300);
@@ -59,9 +73,12 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         $result = $this->cache->get($cacheKey);
         if (!isset($result)) {
-            $scopeTimer = new \RainCity\ScopeTimer(Logger::getLogger(get_class($this)), 'Time to call REDCap function '.$func.'(): %s');
+            $scopeTimer = new \RainCity\ScopeTimer(
+                Logger::getLogger(get_class($this)),
+                'Time to call REDCap function '.$func.'(): %s'
+                );
 
-            $result = call_user_func_array([$this, 'parent::'.$func], $args);
+            $result = call_user_func_array(parent::class .'::' .$func, $args);
 
             if (isset($result)) {
                 $this->cache->set($cacheKey, $result);
@@ -172,12 +189,28 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportPdfFileOfInstruments()
      */
-    public function exportPdfFileOfInstruments($file = null, $recordId = null, $event = null, $form = null, $allRecords = null, $compactDisplay = null, $repeatInstance = null)
+    public function exportPdfFileOfInstruments(
+        $file = null,
+        $recordId = null,
+        $event = null,
+        $form = null,
+        $allRecords = null,
+        $compactDisplay = null,
+        $repeatInstance = null
+        )
     {
         $result = '';
 
         try {
-            $result = parent::exportPdfFileOfInstruments($file, $recordId, $event, $form, $allRecords, $compactDisplay, $repeatInstance);
+            $result = parent::exportPdfFileOfInstruments(
+                $file,
+                $recordId,
+                $event,
+                $form,
+                $allRecords,
+                $compactDisplay,
+                $repeatInstance
+                );
         }
         catch (PhpCapException $exception) {
         }
@@ -234,7 +267,24 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             $result = null;
 
             try {
-                $result = parent::exportRecords($format, $type, $recordIds, $fields, $forms, $events, $filterLogic, $rawOrLabel, $rawOrLabelHeaders, $exportCheckboxLabel, $exportSurveyFields, $exportDataAccessGroups, $dateRangeBegin, $dateRangeEnd, $csvDelimiter, $decimalCharacter);
+                $result = parent::exportRecords(
+                    $format,
+                    $type,
+                    $recordIds,
+                    $fields,
+                    $forms,
+                    $events,
+                    $filterLogic,
+                    $rawOrLabel,
+                    $rawOrLabelHeaders,
+                    $exportCheckboxLabel,
+                    $exportSurveyFields,
+                    $exportDataAccessGroups,
+                    $dateRangeBegin,
+                    $dateRangeEnd,
+                    $csvDelimiter,
+                    $decimalCharacter
+                    );
             }
             catch (PhpCapException $exception) {
                 if ('php' == $format) {
@@ -258,7 +308,6 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-            //$result = parent::exportSurveyLink($recordId, $form, $event, $repeatInstance);
         }
         catch (PhpCapException $exception) {
         }
@@ -276,7 +325,6 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-//            $result = parent::exportSurveyReturnCode($recordId, $form, $event, $repeatInstance);
         }
         catch (PhpCapException $exception) {
         }

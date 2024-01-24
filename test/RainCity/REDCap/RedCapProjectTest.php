@@ -37,6 +37,7 @@ final class RedCapProjectTest extends TestCase
     protected function setUp(): void
     {
         $this->connection = $this->createMock(RedCapApiConnectionInterface::class);
+        $this->connection->method('getUrl')->willReturn(self::TEST_URL);
 
         $this->proj = new RedCapProject(self::TEST_URL, self::TEST_TOKEN, true, true, null, $this->connection);
     }
