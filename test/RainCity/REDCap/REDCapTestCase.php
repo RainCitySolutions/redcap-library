@@ -618,17 +618,6 @@ abstract class REDCapTestCase
     /** @var RedCapProject */
     protected $stubRedcapProj;
 
-    /**
-     * {@inheritDoc}
-     * @see \PHPUnit\Framework\TestCase::setUpBeforeClass()
-     */
-    public static function setUpBeforeClass(): void
-    {
-        // Use the stub logger so no logging is actually done
-        Logger::setLogger(StubLogger::class);
-    }
-
-
     protected static function getCurrentRcdId(): string {
         return 'ID_X_'. self::$nextRcdId;
     }
