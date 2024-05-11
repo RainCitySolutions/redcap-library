@@ -2,7 +2,7 @@
 	"name" : "raincity/redcap-library",
 	"description" : "Library to support working with REDCap",
 	"type" : "library",
-	"version" : "2.0.8",
+	"version" : "2.0.9",
 	"license" : "BSD-3-Clause",
 	"minimum-stability" : "stable",
 	"repositories" : [{
