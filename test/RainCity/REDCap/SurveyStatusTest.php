@@ -5,6 +5,11 @@ namespace RainCity\REDCap;
 /**
  * @covers \RainCity\REDCap\SurveyStatus
  *
+ * @covers RainCity\REDCap\CompletedFieldCount::__construct
+ * @covers RainCity\REDCap\CompletedFieldCount::getCompletedCount
+ * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteField
+ * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteInstrument
+ * @covers RainCity\REDCap\CompletedFieldCount::getRequiredCount
  */
 class SurveyStatusTest extends REDCapTestCase
 {

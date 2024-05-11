@@ -9,6 +9,12 @@ use RainCity\TestHelper\ReflectionHelper;
  *
  * @covers \RainCity\REDCap\Instrument
  *
+ * @covers RainCity\REDCap\Field::__construct
+ * @covers RainCity\REDCap\Field::getCheckboxFieldName
+ * @covers RainCity\REDCap\Field::getName
+ * @covers RainCity\REDCap\Field::getType
+ * @covers RainCity\REDCap\Field::isCAT
+ * @covers RainCity\REDCap\Field::isRequired
  */
 class InstrumentTest extends REDCapTestCase
 {

@@ -44,9 +44,18 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             $connection
             );
 
-        $this->cache = DataCache::instance();
-        $this->cache->setDefaultTTL(300);
+        $this->cache = DataCache::instance(300);
         $this->cacheKey = parse_url($this->getConnection()->getUrl(), PHP_URL_HOST) . '-' . $apiToken;
+    }
+
+    /**
+     * Clear the request cache
+     *
+     * @return bool True on success, otherwise false.
+     */
+    public function clearCache(): bool
+    {
+        return $this->cache->clear();
     }
 
     /**

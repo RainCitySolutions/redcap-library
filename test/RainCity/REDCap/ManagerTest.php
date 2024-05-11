@@ -9,6 +9,28 @@ use RainCity\TestHelper\ReflectionHelper;
  *
  * @covers \RainCity\REDCap\Manager
  *
+ * @covers RainCity\REDCap\Project::__construct
+ * @covers RainCity\REDCap\Project::addEvent
+ * @covers RainCity\REDCap\Project::getEventNames
+ * @covers RainCity\REDCap\Project::addInstrument
+ * @covers RainCity\REDCap\Project::getInstrumentNames
+ * @covers RainCity\REDCap\Project::getInstruments
+ * @covers RainCity\REDCap\Project::getEvents
+ * @covers RainCity\REDCap\Event::__construct
+ * @covers RainCity\REDCap\Event::getName
+ * @covers RainCity\REDCap\Field::__construct
+ * @covers RainCity\REDCap\Field::getCheckboxFieldName
+ * @covers RainCity\REDCap\Field::getName
+ * @covers RainCity\REDCap\Field::getType
+ * @covers RainCity\REDCap\Field::isCAT
+ * @covers RainCity\REDCap\Field::isRequired
+ * @covers RainCity\REDCap\Instrument::__construct
+ * @covers RainCity\REDCap\Instrument::addField
+ * @covers RainCity\REDCap\Instrument::getName
+ * @covers RainCity\REDCap\Instrument::initLogger
+ * @covers RainCity\REDCap\Instrument::makeSingularCheckboxesOptional
+ * @covers RainCity\REDCap\Instrument::readExportFieldNames
+ * @covers RainCity\REDCap\Instrument::readMetadata
  */
 class ManagerTest extends REDCapTestCase
 {

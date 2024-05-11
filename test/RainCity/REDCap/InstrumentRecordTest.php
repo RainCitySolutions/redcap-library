@@ -7,6 +7,64 @@ use RainCity\TestHelper\ReflectionHelper;
  * InstrumentRecod test case.
  *
  * @covers \RainCity\REDCap\InstrumentRecord
+ *
+ * @covers RainCity\REDCap\CompletedFieldCount::__construct
+ * @covers RainCity\REDCap\CompletedFieldCount::getCompletedCount
+ * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteField
+ * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteInstrument
+ * @covers RainCity\REDCap\CompletedFieldCount::getRequiredCount
+ * @covers RainCity\REDCap\CompletedFieldCount::merge
+ * @covers RainCity\REDCap\Field::__construct
+ * @covers RainCity\REDCap\Field::getCheckboxFieldName
+ * @covers RainCity\REDCap\Field::getName
+ * @covers RainCity\REDCap\Field::getType
+ * @covers RainCity\REDCap\Field::isCAT
+ * @covers RainCity\REDCap\Field::isRequired
+ * @covers RainCity\REDCap\Field::getBranching
+ * @covers RainCity\REDCap\Field::hasBranching
+ * @covers RainCity\REDCap\Instrument::__construct
+ * @covers RainCity\REDCap\Instrument::addField
+ * @covers RainCity\REDCap\Instrument::collapseFieldnames
+ * @covers RainCity\REDCap\Instrument::getAllFieldNames
+ * @covers RainCity\REDCap\Instrument::getEvents
+ * @covers RainCity\REDCap\Instrument::getName
+ * @covers RainCity\REDCap\Instrument::getNextInstrument
+ * @covers RainCity\REDCap\Instrument::getOptionalFields
+ * @covers RainCity\REDCap\Instrument::getOptionalRecordFieldNames
+ * @covers RainCity\REDCap\Instrument::getRequiredFormFieldNames
+ * @covers RainCity\REDCap\Instrument::getRequiredRecordFieldNames
+ * @covers RainCity\REDCap\Instrument::hasNextInstrument
+ * @covers RainCity\REDCap\Instrument::initLogger
+ * @covers RainCity\REDCap\Instrument::isCAT
+ * @covers RainCity\REDCap\Instrument::makeSingularCheckboxesOptional
+ * @covers RainCity\REDCap\Instrument::readExportFieldNames
+ * @covers RainCity\REDCap\Instrument::readMetadata
+ * @covers RainCity\REDCap\Instrument::setNextInstrument
+ * @covers RainCity\REDCap\Record::__construct
+ * @covers RainCity\REDCap\Record::collapeCheckboxFields
+ * @covers RainCity\REDCap\Record::fetchField
+ * @covers RainCity\REDCap\Record::getFieldValue
+ * @covers RainCity\REDCap\Record::getRecordIdFieldName
+ * @covers RainCity\REDCap\Record::getREDCapArray
+ * @covers RainCity\REDCap\Record::isLoaded
+ * @covers RainCity\REDCap\Record::isValidEvent
+ * @covers RainCity\REDCap\Record::isValidField
+ * @covers RainCity\REDCap\Record::loadEventRecord
+ * @covers RainCity\REDCap\Record::loadRecord
+ * @covers RainCity\REDCap\Record::loadRecordById
+ * @covers RainCity\REDCap\Record::privLoadRecord
+ * @covers RainCity\REDCap\Record::projectUsesEvents
+ * @covers RainCity\REDCap\Record::setEvents
+ * @covers RainCity\REDCap\Record::setFieldValue
+ * @covers RainCity\REDCap\Record::setFields
+ * @covers RainCity\REDCap\Record::setInstruments
+ * @covers RainCity\REDCap\Record::storeField
+ * @covers RainCity\REDCap\Record::validateEvent
+ * @covers RainCity\REDCap\Record::validateRecord
+ * @covers RainCity\REDCap\SurveyStatus::__construct
+ * @covers RainCity\REDCap\SurveyStatus::isRedcapIncomplete
+ * @covers RainCity\REDCap\SurveyStatus::isRedcapSurveyIncomplete
+ * @covers RainCity\REDCap\SurveyStatus::setRedcapStatus
  */
 class InstrumentRecordTest extends REDCapTestCase
 {
