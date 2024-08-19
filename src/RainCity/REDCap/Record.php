@@ -18,53 +18,52 @@ class Record
     const REDCAP_SURVEY_IDENTIFIER = 'redcap_survey_identifier';
     const REDCAP_TIMESTAMP_FORMAT = 'Y-m-d H:i:s';
 
-
     /** @var LoggerInterface */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /** @var RedCapProject  A RedCapProject project for interfacing with REDCap*/
-    protected $redcapProj;
+    protected RedCapProject $redcapProj;
 
-    /** @var array List of valid fields within REDCap */
-    private $validFields = array();
+    /** @var string[] List of valid fields within REDCap */
+    private array $validFields = array();
 
-    /** @var array List of valid instruments within REDCap */
-    private $validInstruments = array();
+    /** @var array<mixed> List of valid instruments within REDCap */
+    private array $validInstruments = array();
 
-    /** @var array List of valid events within REDCap */
-    private $validEvents = array();
+    /** @var string[] List of valid events within REDCap */
+    private array $validEvents = array();
 
-    /** @var array List of REDCap fields to be tracked by the record */
-    private $redcapFields = array();
+    /** @var string[] List of REDCap fields to be tracked by the record */
+    private array $redcapFields = array();
 
-    /** @var array List of REDCap instruments to specify when loading the record */
-    private $redcapInstruments = array();
+    /** @var string[] List of REDCap instruments to specify when loading the record */
+    private array $redcapInstruments = array();
 
-    /** @var array List of REDCap events referenced by the record */
-    private $redcapEvents = array();
+    /** @var string[] List of REDCap events referenced by the record */
+    private array $redcapEvents = array();
 
     /** @var string The name of the Record ID field */
-    private $recordIdField;
+    private string $recordIdField;
 
     /** @var string The identifier for the record */
-    private $recordId;
+    private ?string $recordId = null;
 
-    /** @var array
+    /** @var array<string, mixed>|array<string, array<string, mixed>>
      *      If the project uses events then this is a multi-dimensional
      *      associative array of REDCap events to array of REDCap field names
      *      to values.
      *      Otherwise, this is an associative array of REDCap field names to values.
      */
-    private $fieldArray = array();
+    private array $fieldArray = array();
 
-    /** @var array
+    /** @var array<string, bool>|array<string, array<string, bool>>
      *      A multi-dimensional associative array of REDCap events to array of
      *      REDCap fields that have been modified since the last save. If the
      *      project does not use events this is a single-dimentional array.
      *      <p>
      *      The key is the field name, the value should be set to true.
      */
-    private $dirtyFieldArray = array();
+    private array $dirtyFieldArray = array();
 
     /**
      * Constructs a REDCap Record object.
@@ -72,15 +71,22 @@ class Record
      * If a record id is provided the record will be loaded from REDCap.
      *
      * @param RedCapProject $proj A RedCapProject object to use with this record.
-     * @param array $fields A list of field names to be retrieved/stored for the record.
+     * @param string[] $fields A list of field names to be retrieved/stored for the record.
      *      If specified as an empty array, all of the fields will be used.
-     * @param string $recordId The ID of a record to load. (optional)
-     * @param array $instruments An array of instrument names used in retrieving the record.
-     * @param array $events An array of event names to use in retrieving/storing the record.
+     * @param string|null $recordId The ID of a record to load. (optional)
+     * @param string[] $instruments An array of instrument names used in retrieving the record.
+     * @param string[] $events An array of event names to use in retrieving/storing the record.
      *
      * @throws \TypeError Thrown if an entry in the fields array is not a string.
      */
-    public function __construct(RedCapProject $proj, array $fields = array(), string $recordId = null, array $instruments = array(), array $events = array()) {
+    public function __construct(
+        RedCapProject $proj,
+        array $fields = array(),
+        string $recordId = null,
+        array $instruments = array(),
+        array $events = array()
+        )
+    {
         $this->logger = Logger::getLogger(get_class($this));
 
         $this->redcapProj = $proj;
@@ -128,12 +134,14 @@ class Record
      * @return bool Returns true if the record was found in REDCap, otherwise
      *      returns false.
      */
-    public function loadRecordById (string $recordId): bool {
+    public function loadRecordById (string $recordId): bool
+    {
         $result = false;
 
         $this->recordId = $recordId;
         $this->fieldArray = array();
 
+        /** @var string[] */
         $fields = $this->redcapFields;
 
         /*
@@ -149,7 +157,7 @@ class Record
             'php',
             'flat',
             array($recordId),
-            empty($fields) ? null : $fields,
+            $fields,
             empty($this->redcapInstruments) ? null : $this->redcapInstruments,
             (!$this->projectUsesEvents() || empty($this->redcapEvents)) ? null : $this->redcapEvents,
             null,       // filterLogic
@@ -189,32 +197,33 @@ class Record
      * If the project uses events but an invalid event is specified the first
      * event in the project will be used.
      *
-     * @param array $rcd An array of associative arrays of strings to values.
-     *      The format is expected to be that returned by REDCap on a
-     *      exportRecords request and contain data for a single REDCap record.
+     * @param array<string, mixed> $rcd An array of associative arrays of
+     *      strings to values. The format is expected to be that returned by
+     *      REDCap on a exportRecords request and contain data for a single
+     *      REDCap record.
      *
      * @return bool Returns true if the record was loaded, otherwise returns false.
      */
-    public function loadRecord (array $rcd) {
+    public function loadRecord (array $rcd): bool
+    {
         $recordLoaded = false;
 
-        if (!empty($rcd)) {
-            if ($this->validateRecord($rcd)) {
-                if ($this->projectUsesEvents()) {
-                    $this->loadEventRecord($rcd);
-                }
-                else {
-                    $this->privLoadRecord(array_shift($rcd));
-                }
-
-                $recordLoaded = true;
+        if (!empty($rcd) && $this->validateRecord($rcd)) {
+            if ($this->projectUsesEvents()) {
+                $this->loadEventRecord($rcd);
             }
+            else {
+                $this->privLoadRecord(array_shift($rcd));
+            }
+
+            $recordLoaded = true;
         }
 
         return $recordLoaded;
     }
 
-    public function isLoaded(): bool {
+    public function isLoaded(): bool
+    {
         return !empty($this->fieldArray);
     }
 
@@ -227,11 +236,12 @@ class Record
      * Further, we expect that each inner entry will include the record id
      * and event name fields.
      *
-     * @param array $rcd The record to validate.
+     * @param array<string, mixed>|array<string, array<string, mixed>> $rcd The record to validate.
      *
      * @return bool Returns true if the record is valid, otherwise returns false.
      */
-    private function validateRecord (array $rcd): bool {
+    private function validateRecord (array $rcd): bool
+    {
         $isValid = true;
 
         // If the record is empty, don't do anything.
@@ -244,7 +254,7 @@ class Record
             {
                 $isValid = false;
                 $errMsg = 'Found issue with REDCap record. ' .
-                    $this->projectUsesEvents() ? 'More entries in record than valid events' : 'More than one entry in record';
+                    ($this->projectUsesEvents() ? 'More entries in record than valid events' : 'More than one entry in record');
                 $this->logger->warning($errMsg);
             }
             else {
@@ -325,14 +335,15 @@ class Record
     /**
      * Load a record, potentially for a single event.
      *
-     * @param array $rcd A REDCap record.
+     * @param array<string, array<string, mixed>> $rcd A REDCap record.
      * @param string|null $event The name of the event to load if only
      *      interested in a particular event.
      *
      * @throws \InvalidArgumentException Thrown if there is an issue loading
      *      the record.
      */
-    private function loadEventRecord (array $rcd, ?string $event = null) {
+    private function loadEventRecord (array $rcd, ?string $event = null): void
+    {
         // If an event was provided but the record has multiple events
         // ignore the event.
         // (Making an assumption here that the record contains data for
@@ -365,10 +376,11 @@ class Record
      * Assumes the $rcd is a single record object to be loaded for the
      * specified event.
      *
-     * @param array $rcd An associative array of strings to values.
+     * @param array<string, mixed> $rcd An associative array of strings to values.
      * @param string $event A valid event name or null
      */
-    private function privLoadRecord (array $rcd, ?string $event = null) {
+    private function privLoadRecord (array $rcd, ?string $event = null): void
+    {
         if ($this->projectUsesEvents()) {
             if (!$this->isValidEvent($event) ) {
                 $event = $this->validEvents[0];
@@ -410,9 +422,10 @@ class Record
      * If the set of fields has not previously been set then only the record
      * id field is returned.
      *
-     * @return array An array of field names.
+     * @return string[] An array of field names.
      */
-    public function getFields(): array {
+    public function getFields(): array
+    {
         return array_merge(array ($this->recordIdField), $this->redcapFields);
     }
 
@@ -422,7 +435,8 @@ class Record
      * @param string[] $fields A list of field names. If specified as an empty
      *      array, all of the fields will be used.
      */
-    public function setFields(array $fields) {
+    public function setFields(array $fields): void
+    {
         $this->redcapFields = array();
 
         foreach ($fields as $field) {
@@ -440,7 +454,8 @@ class Record
      *
      * @param string[] $instruments A list of instrument names.
      */
-    public function setInstruments(array $instruments) {
+    public function setInstruments(array $instruments): void
+    {
         $this->redcapInstruments = array();
 
         foreach ($instruments as $instrument) {
@@ -459,7 +474,8 @@ class Record
      * @param string[] $events A list of fully qualified event names. Fully
      *      qualified is the event name including the arm name.
      */
-    public function setEvents(array $events) {
+    public function setEvents(array $events): void
+    {
         $this->redcapEvents = array();
 
         foreach ($events as $event) {
@@ -475,17 +491,19 @@ class Record
      *
      * @return string[] An array of event names.
      */
-    public function getEvents(): array {
+    public function getEvents(): array
+    {
         return $this->redcapEvents;
     }
 
     /**
      * Add fields to the list of fields to be retreived/stored for the record.
      *
-     * @param array $newFields A list of field names. If specified as an empty
+     * @param string[] $newFields A list of field names. If specified as an empty
      *      array, all of the fields will be used.
      */
-    public function addFields(array $newFields) {
+    public function addFields(array $newFields): void
+    {
         foreach ($newFields as $field) {
             if (in_array($field, $this->validFields) && !in_array($field, $this->redcapFields)) {
                 $this->redcapFields[] = $field;
@@ -496,9 +514,10 @@ class Record
     /**
      * Removes fields from the list of fields to be retrieved/stored for the record.
      *
-     * @param array $oldFields A list of field names to be removed.
+     * @param string[] $oldFields A list of field names to be removed.
      */
-    public function removeFields(array $oldFields) {
+    public function removeFields(array $oldFields): void
+    {
         foreach ($oldFields as $field) {
             $ndx = array_search($field, $this->redcapFields);
             if ($ndx !== FALSE) {
@@ -512,7 +531,8 @@ class Record
      *
      * @param string $rcdId A string to use as the record id.
      */
-    public function setRecordId(string $rcdId) {
+    public function setRecordId(string $rcdId): void
+    {
         $this->recordId = $rcdId;
     }
 
@@ -523,7 +543,8 @@ class Record
      *
      * @return string|NULL The record id, or null if there is no record id.
      */
-    public function getRecordId(): ?string {
+    public function getRecordId(): ?string
+    {
         return $this->recordId;
     }
 
@@ -540,7 +561,8 @@ class Record
      *
      * @return string|NULL The value for the field or null if there is no value.
      */
-    public function getFieldValue(string $field, ?string $event = null): ?string {
+    public function getFieldValue(string $field, ?string $event = null): ?string
+    {
         $result = null;
 
         if ($this->isValidField($field) && $this->isValidEvent($event) ) {
@@ -563,7 +585,8 @@ class Record
      *      there is no value set for the field or the field specified is Not
      *      valid.
      */
-    public function getMostRecentFieldValue(string $field): ?string {
+    public function getMostRecentFieldValue(string $field): ?string
+    {
         $result = null;
 
         if ($this->isValidField($field)) {
@@ -599,7 +622,8 @@ class Record
      *
      * @return string|NULL Returns the value for the specified field/event pair or null.
      */
-    private function fetchField(string $field, ?string $event): ?string {
+    private function fetchField(string $field, ?string $event): ?string
+    {
         $result = null;
 
         if ($this->projectUsesEvents()) {
@@ -634,7 +658,8 @@ class Record
      * @param string $value The value to be associated with the field.
      * @param string $event The event the field value is associated with. Defaults to null.
      */
-    public function setFieldValue(string $field, string $value, string $event = null) {
+    public function setFieldValue(string $field, string $value, string $event = null): void
+    {
         if ($this->isValidField($field) && $this->isValidEvent($event) ) {
             if (!in_array($field, $this->redcapFields)) {
                 $this->redcapFields[] = $field;
@@ -664,7 +689,8 @@ class Record
      * @param string $value The value to be associated with the field
      * @param string $event The name of an event or null
      */
-    private function storeField(string $field, string $value, ?string $event) {
+    private function storeField(string $field, string $value, ?string $event): void
+    {
         if ($this->projectUsesEvents()) {
             if (is_null($event)) {
                 if (empty($this->redcapEvents)) {
@@ -701,10 +727,11 @@ class Record
      *
      * @param string $event The name of an event. Defaults to null.
      *
-     * @return array An associative array of field names to values or
+     * @return array<mixed> An array of field names to values or
      *      events to arrays of field name to value.
      */
-    public function getREDCapArray(string $event = null): array {
+    public function getREDCapArray(string $event = null): array
+    {
         $result = array();
 
         if ($this->isValidEvent($event)) {
@@ -738,12 +765,13 @@ class Record
      * This method collapes these fields into a single field with the value
      * set to the sum of the option values (e.g. fielda => 2).
      *
-     * @param array $fieldsOfInterest An array of field names of intrest.
+     * @param string[] $fieldsOfInterest An array of field names of interest.
      * @param string $event The event to examine. Ignored on classic projects.
      *
-     * @return array An associative array representing the collapsed record.
+     * @return array<string, mixed> An associative array representing the collapsed record.
      */
-    protected function collapeCheckboxFields(array $fieldsOfInterest, string $event = null): array {
+    protected function collapeCheckboxFields(array $fieldsOfInterest, string $event = null): array
+    {
         $collapsedRecord = array();
 
         if ($this->projectUsesEvents()) {
@@ -801,8 +829,8 @@ class Record
      *
      * Saves any fields marked as dirty to the REDCap project.
      */
-    public function save () {
-
+    public function save (): void
+    {
         // If we don't have a record id, fetch one
         if (!isset($this->recordId)) {
             $this->recordId = $this->redcapProj->generateNextRecordName();
@@ -849,7 +877,8 @@ class Record
      *
      * @return bool Returns true if the project uses events, otherwise returns false.
      */
-    protected function projectUsesEvents(): bool {
+    protected function projectUsesEvents(): bool
+    {
         return !empty($this->validEvents);
     }
 
@@ -890,7 +919,8 @@ class Record
         return $isValid;
     }
 
-    protected function getRecordIdFieldName() {
+    protected function getRecordIdFieldName(): string
+    {
         return $this->recordIdField;
     }
 
@@ -914,23 +944,24 @@ class Record
      * ]
      * </code>
      *
-     * @param array $rcd And array to test for REDCap conformance.
+     * @param array<mixed, mixed> $rcd And array to test for REDCap conformance.
      *
      * @return bool Returns true if the entry is valid, othewise ReturnSelf
      *      false.
      */
-    private function isValidRedcapStructure(array $rcd): bool {
-        $isValid = true;
+//     private function isValidRedcapStructure(array $rcd): bool
+//     {
+//         $isValid = true;
 
-        foreach($rcd as $ndx => $entry) {
-            if (!is_numeric($ndx) || !is_array($entry) || !$this->isValidRedcapEntry($entry)) {
-                $isValid = false;
-                break;
-            }
-        }
+//         foreach($rcd as $ndx => $entry) {
+//             if (!is_numeric($ndx) || !is_array($entry) || !$this->isValidRedcapEntry($entry)) {
+//                 $isValid = false;
+//                 break;
+//             }
+//         }
 
-        return $isValid;
-    }
+//         return $isValid;
+//     }
 
     /**
      * Checks if an inner entry of a REDCap record looks valid.
@@ -938,34 +969,39 @@ class Record
      * To be valid each of the keys must be a string and values must be
      * either a string or a number.
      *
-     * @param array An array to test for REDCap conformance.
+     * @param array<string, mixed> $entry An array to test for REDCap conformance.
      *
      * @return bool Returns true if the entry is valid, otherwise returns
      *      false.
      */
-    private function isValidRedcapEntry(array $entry): bool {
-        $isValid = true;
+//     private function isValidRedcapEntry(array $entry): bool
+//     {
+//         $isValid = true;
 
-        foreach ($entry as $key => $value) {
-            if (!is_string($key) || !(is_string($value) || is_numeric($value)) ) {
-                $isValid = false;
-                break;
-            }
-        }
+//         foreach ($entry as $key => $value) {
+//             if (!is_string($key) || !(is_string($value) || is_numeric($value)) ) {
+//                 $isValid = false;
+//                 break;
+//             }
+//         }
 
-        return $isValid;
-    }
+//         return $isValid;
+//     }
 
 
-    protected function validateEvent(?string $event, $checkArray = null) {
+    /**
+     *
+     * @param string $event
+     * @param array<string, mixed>|array<string, array<string, mixed>> $checkArray
+     */
+    protected function validateEvent(?string $event, array $checkArray = null): void
+    {
         if (is_null($event) || !in_array($event, $this->getEvents()) ) {
             throw new \InvalidArgumentException('A valid event must be specified for multi-event projects');
         }
         else {
-            if (isset($checkArray) && false) {
-                if (!isset($checkArray[$event])) {
-                    throw new \InvalidArgumentException('The event is not being tracked in this record');
-                }
+            if (isset($checkArray) && !isset($checkArray[$event]) && false) { /* @phpstan-ignore booleanAnd.rightAlwaysFalse */
+                throw new \InvalidArgumentException('The event is not being tracked in this record');
             }
         }
     }

@@ -3,9 +3,7 @@ namespace RainCity\REDCap;
 
 use IU\PHPCap\RedCapApiConnectionInterface;
 use IU\PHPCap\RedCapProject;
-use RainCity\Logging\Logger;
 use RainCity\TestHelper\RainCityTestCase;
-use RainCity\TestHelper\StubLogger;
 
 
 abstract class REDCapTestCase
@@ -647,10 +645,10 @@ abstract class REDCapTestCase
     // TODO: Add support for with() callback, i.e. setWillCallback(), setWithCallback()
     public function setCallback(string $method, callable $callback) {
         if (!isset($this->mockCallbacks[$method])) {
-            $this->stubRedcapProj->method($method)->will($this->returnCallback(function() use ($method) {
+            $this->stubRedcapProj->method($method)->willReturnCallback(function() use ($method) {
                 $callbackFunc = $this->mockCallbacks[$method];
                 return call_user_func_array($callbackFunc, func_get_args());
-            } ) );
+            } );
         }
 
         $this->mockCallbacks[$method] = $callback;

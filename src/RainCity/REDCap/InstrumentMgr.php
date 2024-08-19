@@ -6,20 +6,21 @@ use RainCity\DataCache;
 use RainCity\MethodLogger;
 use RainCity\ScopeTimer;
 use RainCity\Logging\Logger;
+use Psr\Log\LoggerInterface;
 
 class InstrumentMgr
 {
-    private $logger;
+    private LoggerInterface $logger;
 
-    /** @var RedCapProject */
-    private $redcapProject;
+    private RedCapProject $redcapProject;
 
-    private $cache;
+    private DataCache $cache;
 
     /** @var Instrument[] Associative array where the key is the form name */
-    private $instruments = array();
+    private array $instruments = array();
 
-    public function __construct(RedCapProject $redcapProject, DataCache $cache = null) {
+    public function __construct(RedCapProject $redcapProject, DataCache $cache = null)
+    {
         $this->logger = Logger::getLogger(get_class($this));
         $this->redcapProject = $redcapProject;
         $this->cache = $cache;
@@ -27,16 +28,15 @@ class InstrumentMgr
         $this->loadInstruments();
     }
 
-    private function loadInstruments() {
+    private function loadInstruments(): void
+    {
         $methodLogger = new MethodLogger(); //NOSONAR
 
-        $this->instruments = isset($this->cache) ? $this->cache->get('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl()) : null;
+        $this->instruments = isset($this->cache) ?
+            $this->cache->get('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl()) :
+            [];
 
-        if (isset($this->instruments)) {
-            // Loaded from the cache so initialize references to objects
-            $this->initializeInstrumentReferences($this->instruments);
-        }
-        else {
+        if (empty($this->instruments)) {
             $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap instruments: %s');   // NOSONAR
 
             $localInstruments = $this->redcapProject->exportInstruments();
@@ -50,7 +50,8 @@ class InstrumentMgr
             $metadata = $this->redcapProject->exportMetadata();
             foreach($metadata as $field) {
                 $form = $this->instruments[$field['form_name']];
-                $form->addField(new Field($form, $field['field_name'], $field['field_type'], $field['required_field'], $field['branching_logic'], $field['field_note']));
+                $form->addField(new Field($field));
+//                $form->addField(new Field($form, $field['field_name'], $field['field_type'], $field['required_field'], $field['branching_logic'], $field['field_note']));
             }
             unset($metadata);
 
@@ -59,29 +60,42 @@ class InstrumentMgr
             $eventdata = $this->redcapProject->exportInstrumentEventMappings();
             foreach($eventdata as $entry) {
                 $form = $this->instruments[$entry['form']];
-                $form->addEvent($entry['unique_event_name']);
+//TODO: needed?                $form->addEvent($entry['unique_event_name']);
             }
             unset($eventdata);
 
             if (isset($this->cache)) {
                 $this->cache->set('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl(), $this->instruments);
             }
+        } else {
+            // Loaded from the cache so initialize references to objects
+            $this->initializeInstrumentReferences($this->instruments);
         }
     }
 
-    private function initializeInstrumentReferences(array $instruments): void {
+    /**
+     *
+     * @param Instrument[] $instruments
+     */
+    private function initializeInstrumentReferences(array $instruments): void
+    {
         foreach ($instruments as $instrument) {
             foreach ($instrument->getRequiredFields() as $field) {
-                $field->setForm($instrument);
+                $field->setFormName($instrument->getName());
             }
 
             foreach ($instrument->getOptionalFields() as $field) {
-                $field->setForm($instrument);
+                $field->setFormName($instrument->getName());
             }
         }
     }
 
-    public function getInstruments(): array {
+    /**
+     *
+     * @return Instrument[]
+     */
+    public function getInstruments(): array
+    {
         return $this->instruments;
     }
 }

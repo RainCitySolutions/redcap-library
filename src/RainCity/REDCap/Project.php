@@ -7,20 +7,25 @@ class Project implements \Serializable
 {
     use SerializeAsArrayTrait;
 
-    private $id;
-    private $title;
-    private $created;
-    private $surveysEnabled;
-    private $isLongitudinal;
-    private $autoNumber;
+    private int $id;
+    private string $title;
+    private string $created;
+    private bool $surveysEnabled;
+    private bool $isLongitudinal;
+    private bool $autoNumber;
 
     /** @var Instrument[] Associative array where the key is the form name */
-    private $instruments = array();
+    private array $instruments = array();
 
     /** @var Event[] Associative array where the key is the unique event name */
-    private $events = array();
+    private array $events = array();
 
-    public function __construct(array $data) {
+    /**
+     *
+     * @param array<string, mixed> $data
+     */
+    public function __construct(array $data)
+    {
         // Check that the data array contains a minimal set of REDCap properties
         if (!empty(array_diff(array(
             'project_id',
@@ -41,59 +46,89 @@ class Project implements \Serializable
         $this->autoNumber = $data['record_autonumbering_enabled'] == 1;
     }
 
-    public function getCacheKey (): string {
+    public function getCacheKey (): string
+    {
         return preg_replace ('/[\{\}\(\)\/\\\@: ]/', '_', sprintf('%d-%s', $this->id, $this->created));
     }
 
-    public function getId(): int {
+    public function getId(): int
+    {
         return $this->id;
     }
 
-    public function getTitle(): string {
+    public function getTitle(): string
+    {
         return $this->title;
     }
 
-    public function isSurveyEnabled(): bool {
+    public function isSurveyEnabled(): bool
+    {
         return $this->surveysEnabled;
     }
 
-    public function isLongitudinal(): bool {
+    public function isLongitudinal(): bool
+    {
         return $this->isLongitudinal;
     }
 
-    public function isAutoNumbered(): bool {
+    public function isAutoNumbered(): bool
+    {
         return $this->autoNumber;
     }
 
-    public function addInstrument (Instrument $instrument) {
+    public function addInstrument (Instrument $instrument): void
+    {
         $this->instruments[$instrument->getName()] = $instrument;
     }
 
-    public function getInstrument (string $instrumentName): ?Instrument {
+    public function getInstrument (string $instrumentName): ?Instrument
+    {
         return $this->instruments[$instrumentName] ?? null;
     }
 
-    public function getInstrumentNames():array {
+    /**
+     *
+     * @return string[]
+     */
+    public function getInstrumentNames(): array
+    {
         return array_keys($this->instruments);
     }
 
-    public function getInstruments():array {
+    /**
+     *
+     * @return array<string, Instrument>
+     */
+    public function getInstruments(): array
+    {
         return $this->instruments;
     }
 
-    public function addEvent (Event $event) {
+    public function addEvent (Event $event): void
+    {
         $this->events[$event->getName()] = $event;
     }
 
-    public function getEvent(string $eventName): ?Event {
+    public function getEvent(string $eventName): ?Event
+    {
         return $this->events[$eventName] ?? null;
     }
 
-    public function getEventNames ():array {
+    /**
+     *
+     * @return string[]
+     */
+    public function getEventNames (): array
+    {
         return array_keys($this->events);
     }
 
-    public function getEvents(): array {
+    /**
+     *
+     * @return Event[]
+     */
+    public function getEvents(): array
+    {
         return $this->events;
     }
 }

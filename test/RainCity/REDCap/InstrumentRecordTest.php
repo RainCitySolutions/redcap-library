@@ -1,71 +1,67 @@
 <?php
 namespace RainCity\REDCap;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use RainCity\TestHelper\ReflectionHelper;
 
-/**
- * InstrumentRecod test case.
- *
- * @covers \RainCity\REDCap\InstrumentRecord
- *
- * @covers RainCity\REDCap\CompletedFieldCount::__construct
- * @covers RainCity\REDCap\CompletedFieldCount::getCompletedCount
- * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteField
- * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteInstrument
- * @covers RainCity\REDCap\CompletedFieldCount::getRequiredCount
- * @covers RainCity\REDCap\CompletedFieldCount::merge
- * @covers RainCity\REDCap\Field::__construct
- * @covers RainCity\REDCap\Field::getCheckboxFieldName
- * @covers RainCity\REDCap\Field::getName
- * @covers RainCity\REDCap\Field::getType
- * @covers RainCity\REDCap\Field::isCAT
- * @covers RainCity\REDCap\Field::isRequired
- * @covers RainCity\REDCap\Field::getBranching
- * @covers RainCity\REDCap\Field::hasBranching
- * @covers RainCity\REDCap\Instrument::__construct
- * @covers RainCity\REDCap\Instrument::addField
- * @covers RainCity\REDCap\Instrument::collapseFieldnames
- * @covers RainCity\REDCap\Instrument::getAllFieldNames
- * @covers RainCity\REDCap\Instrument::getEvents
- * @covers RainCity\REDCap\Instrument::getName
- * @covers RainCity\REDCap\Instrument::getNextInstrument
- * @covers RainCity\REDCap\Instrument::getOptionalFields
- * @covers RainCity\REDCap\Instrument::getOptionalRecordFieldNames
- * @covers RainCity\REDCap\Instrument::getRequiredFormFieldNames
- * @covers RainCity\REDCap\Instrument::getRequiredRecordFieldNames
- * @covers RainCity\REDCap\Instrument::hasNextInstrument
- * @covers RainCity\REDCap\Instrument::initLogger
- * @covers RainCity\REDCap\Instrument::isCAT
- * @covers RainCity\REDCap\Instrument::makeSingularCheckboxesOptional
- * @covers RainCity\REDCap\Instrument::readExportFieldNames
- * @covers RainCity\REDCap\Instrument::readMetadata
- * @covers RainCity\REDCap\Instrument::setNextInstrument
- * @covers RainCity\REDCap\Record::__construct
- * @covers RainCity\REDCap\Record::collapeCheckboxFields
- * @covers RainCity\REDCap\Record::fetchField
- * @covers RainCity\REDCap\Record::getFieldValue
- * @covers RainCity\REDCap\Record::getRecordIdFieldName
- * @covers RainCity\REDCap\Record::getREDCapArray
- * @covers RainCity\REDCap\Record::isLoaded
- * @covers RainCity\REDCap\Record::isValidEvent
- * @covers RainCity\REDCap\Record::isValidField
- * @covers RainCity\REDCap\Record::loadEventRecord
- * @covers RainCity\REDCap\Record::loadRecord
- * @covers RainCity\REDCap\Record::loadRecordById
- * @covers RainCity\REDCap\Record::privLoadRecord
- * @covers RainCity\REDCap\Record::projectUsesEvents
- * @covers RainCity\REDCap\Record::setEvents
- * @covers RainCity\REDCap\Record::setFieldValue
- * @covers RainCity\REDCap\Record::setFields
- * @covers RainCity\REDCap\Record::setInstruments
- * @covers RainCity\REDCap\Record::storeField
- * @covers RainCity\REDCap\Record::validateEvent
- * @covers RainCity\REDCap\Record::validateRecord
- * @covers RainCity\REDCap\SurveyStatus::__construct
- * @covers RainCity\REDCap\SurveyStatus::isRedcapIncomplete
- * @covers RainCity\REDCap\SurveyStatus::isRedcapSurveyIncomplete
- * @covers RainCity\REDCap\SurveyStatus::setRedcapStatus
- */
+#[CoversClass('\RainCity\REDCap\InstrumentRecord')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', '__construct')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getCompletedCount')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getFirstIncompleteField')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getFirstIncompleteInstrument')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getRequiredCount')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'merge')]
+#[CoversMethod('RainCity\REDCap\Field', '__construct')]
+#[CoversMethod('RainCity\REDCap\Field', 'getCheckboxFieldName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getType')]
+#[CoversMethod('RainCity\REDCap\Field', 'isCAT')]
+#[CoversMethod('RainCity\REDCap\Field', 'isRequired')]
+#[CoversMethod('RainCity\REDCap\Field', 'getBranching')]
+#[CoversMethod('RainCity\REDCap\Field', 'hasBranching')]
+#[CoversMethod('RainCity\REDCap\Instrument', '__construct')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'addField')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'collapseFieldnames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getAllFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getEvents')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getName')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getNextInstrument')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getOptionalFields')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getOptionalRecordFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getRequiredFormFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getRequiredRecordFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'hasNextInstrument')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'isCAT')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'makeSingularCheckboxesOptional')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'readExportFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'readMetadata')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'setNextInstrument')]
+#[CoversMethod('RainCity\REDCap\Record', '__construct')]
+#[CoversMethod('RainCity\REDCap\Record', 'collapeCheckboxFields')]
+#[CoversMethod('RainCity\REDCap\Record', 'fetchField')]
+#[CoversMethod('RainCity\REDCap\Record', 'getFieldValue')]
+#[CoversMethod('RainCity\REDCap\Record', 'getRecordIdFieldName')]
+#[CoversMethod('RainCity\REDCap\Record', 'getREDCapArray')]
+#[CoversMethod('RainCity\REDCap\Record', 'isLoaded')]
+#[CoversMethod('RainCity\REDCap\Record', 'isValidEvent')]
+#[CoversMethod('RainCity\REDCap\Record', 'isValidField')]
+#[CoversMethod('RainCity\REDCap\Record', 'loadEventRecord')]
+#[CoversMethod('RainCity\REDCap\Record', 'loadRecord')]
+#[CoversMethod('RainCity\REDCap\Record', 'loadRecordById')]
+#[CoversMethod('RainCity\REDCap\Record', 'privLoadRecord')]
+#[CoversMethod('RainCity\REDCap\Record', 'projectUsesEvents')]
+#[CoversMethod('RainCity\REDCap\Record', 'setEvents')]
+#[CoversMethod('RainCity\REDCap\Record', 'setFieldValue')]
+#[CoversMethod('RainCity\REDCap\Record', 'setFields')]
+#[CoversMethod('RainCity\REDCap\Record', 'setInstruments')]
+#[CoversMethod('RainCity\REDCap\Record', 'storeField')]
+#[CoversMethod('RainCity\REDCap\Record', 'validateEvent')]
+#[CoversMethod('RainCity\REDCap\Record', 'validateRecord')]
+#[CoversMethod('RainCity\REDCap\SurveyStatus', '__construct')]
+#[CoversMethod('RainCity\REDCap\SurveyStatus', 'isRedcapIncomplete')]
+#[CoversMethod('RainCity\REDCap\SurveyStatus', 'isRedcapSurveyIncomplete')]
+#[CoversMethod('RainCity\REDCap\SurveyStatus', 'setRedcapStatus')]
 class InstrumentRecordTest extends REDCapTestCase
 {
     private const UNEXPECTED_COMPLETED_COUNT = 'Unexpected completed count';

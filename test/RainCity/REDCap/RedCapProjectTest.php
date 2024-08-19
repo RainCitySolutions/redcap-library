@@ -4,14 +4,12 @@ namespace RainCity\REDCap;
 use IU\PHPCap\PhpCapException;
 use IU\PHPCap\RedCapApiConnectionInterface;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use RainCity\TestHelper\ReflectionHelper;
 
-/**
- *
- * @covers \RainCity\REDCap\RedcapProject
- *
- * @covers RainCity\REDCap\RedCapErrorHandler::__construct
- */
+#[CoversClass('\RainCity\REDCap\RedcapProject')]
+#[CoversMethod('RainCity\REDCap\RedCapErrorHandler', '__construct')]
 final class RedCapProjectTest extends TestCase
 {
     const TEST_URL = 'https://redcap.somesite.co/redcap/api';
@@ -224,7 +222,7 @@ final class RedCapProjectTest extends TestCase
             connection->
             expects($this->atMost(2))->
             method('callWithArray')->
-            will($this->returnCallback($callback));
+            willReturnCallback($callback);
 
         $result = $this->proj->exportRedcapVersion();
 

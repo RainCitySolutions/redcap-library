@@ -21,17 +21,21 @@ class Field implements \Serializable
         );
 
 
-    private $formName;
-    private $name;
-    private $type;
-    private $branching;
-    private $note;
+    private string $formName;
+    private string $name;
+    private string $type;
+    private string $branching;
+    private string $note;
 
-    private $isRequired;
-    private $isOptional;
-    private $isCAT;
+    private bool $isRequired;
+    private bool $isOptional;
+    private bool $isCAT;
 
-    public function __construct(array $data) {
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function __construct(array $data)
+    {
         // Check that the data array contains a minimal set of REDCap fields
         if (!empty(array_diff(self::MINIMUM_REDCAP_FIELD_SET, array_keys($data))) ) {
             throw new \InvalidArgumentException('Array passed is not a valid REDCap field');
@@ -60,47 +64,58 @@ class Field implements \Serializable
         $this->isCAT = preg_match ('/.?(_tscore|_std_error).*/', $this->name) == 1;
     }
 
-    public function setFormName(string $formName) {
+    public function setFormName(string $formName): void
+    {
         $this->formName = $formName;
     }
 
-    public function getFormName(): string {
+    public function getFormName(): string
+    {
         return $this->formName;
     }
 
-    public function getName(): string {
+    public function getName(): string
+    {
         return $this->name;
     }
 
-    public function getType(): string {
+    public function getType(): string
+    {
         return $this->type;
     }
 
-    public function getBranching(): string {
+    public function getBranching(): string
+    {
         return $this->branching;
     }
 
-    public function getNote(): string {
+    public function getNote(): string
+    {
         return $this->note;
     }
 
-    public function isRequired(): bool {
+    public function isRequired(): bool
+    {
         return $this->isRequired;
     }
 
-    public function isOptional(): bool {
+    public function isOptional(): bool
+    {
         return $this->isOptional;
     }
 
-    public function isCAT(): bool {
+    public function isCAT(): bool
+    {
         return $this->isCAT;
     }
 
-    public function hasBranching(): bool {
+    public function hasBranching(): bool
+    {
         return $this->branching != '';
     }
 
-    public function getCheckboxFieldName(): ?string {
+    public function getCheckboxFieldName(): ?string
+    {
         $fieldname = null;
         $matches = array();
 

@@ -1,21 +1,20 @@
 <?php
 namespace RainCity\REDCap;
 
-use Psr\Log\LoggerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use RainCity\TestHelper\ReflectionHelper;
+use PHPUnit\Framework\Attributes\Depends;
 
 
-/**
- *
- * @covers \RainCity\REDCap\Instrument
- *
- * @covers RainCity\REDCap\Field::__construct
- * @covers RainCity\REDCap\Field::getCheckboxFieldName
- * @covers RainCity\REDCap\Field::getName
- * @covers RainCity\REDCap\Field::getType
- * @covers RainCity\REDCap\Field::isCAT
- * @covers RainCity\REDCap\Field::isRequired
- */
+
+#[CoversClass('\RainCity\REDCap\Instrument')]
+#[CoversMethod('RainCity\REDCap\Field', '__construct')]
+#[CoversMethod('RainCity\REDCap\Field', 'getCheckboxFieldName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getType')]
+#[CoversMethod('RainCity\REDCap\Field', 'isCAT')]
+#[CoversMethod('RainCity\REDCap\Field', 'isRequired')]
 class InstrumentTest extends REDCapTestCase
 {
     private const MISSED_INPUT_FIELD = 'Missed input field';
@@ -61,12 +60,10 @@ class InstrumentTest extends REDCapTestCase
         $reqFields = ReflectionHelper::getObjectProperty(Instrument::class, 'requiredFields', $obj);
         $optFields = ReflectionHelper::getObjectProperty(Instrument::class, 'optionalFields', $obj);
         $events = ReflectionHelper::getObjectProperty(Instrument::class, 'events', $obj);
-        $logger = ReflectionHelper::getObjectProperty(Instrument::class, 'logger', $obj);
 
         $this->assertEquals(static::DEMOGRAPHICS_FORM, $name, 'Instrument name not stored properly');
         $this->assertEquals(static::DEMOGRAPHICS_LABEL, $label, 'Label not stored properly');
         $this->assertEmpty($events);
-        $this->assertInstanceOf(LoggerInterface::class, $logger);
 
 
         $fieldNames = self::exportedFieldsForInstrument(
@@ -403,19 +400,23 @@ class InstrumentTest extends REDCapTestCase
         $optFieldName = 'optFieldName';
         $optFieldType = 'text';
 
-        $reqField = $this->createMock(Field::class);
-        $reqField->method('getFormName')->willReturn($testFormName);
-        $reqField->method('isCAT')->willReturn(false);
-        $reqField->method('getName')->willReturn($reqFieldName);
-        $reqField->method('getType')->willReturn($reqFieldType);
-        $reqField->method('isRequired')->willReturn(true);
+        $reqField = new Field([
+            'form_name' => $testFormName,
+            'field_name' => $reqFieldName,
+            'field_type' => $reqFieldType,
+            'branching_logic' => '',
+            'field_note' => '',
+            'required_field' => true
+            ]);
 
-        $optField = $this->createMock(Field::class);
-        $optField->method('getFormName')->willReturn($testFormName);
-        $optField->method('isCAT')->willReturn(false);
-        $optField->method('getName')->willReturn($optFieldName);
-        $optField->method('getType')->willReturn($optFieldType);
-        $optField->method('isRequired')->willReturn(false);
+        $optField = new Field([
+            'form_name' => $testFormName,
+            'field_name' => $optFieldName,
+            'field_type' => $optFieldType,
+            'branching_logic' => '',
+            'field_note' => 'optional',
+            'required_field' => false
+        ]);
 
         ReflectionHelper::setObjectProperty(Instrument::class, 'isCAT', true, $this->testObj);
         ReflectionHelper::setObjectProperty(Instrument::class, 'events', array($testEvent), $this->testObj);
@@ -461,9 +462,7 @@ class InstrumentTest extends REDCapTestCase
         return $serializedObj;
     }
 
-    /**
-     * @depends testSerialize
-     */
+    #[Depends('testSerialize')]
     public function testUnserialize($serializedObj) // $serialObj is passed from testSerialize
     {
         $reqFieldName = 'reqFieldName';

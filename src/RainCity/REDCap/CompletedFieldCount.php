@@ -3,31 +3,40 @@ namespace RainCity\REDCap;
 
 class CompletedFieldCount
 {
-    private $completedCnt = 0;
-    private $requiredCnt = 0;
-    private $firstIncompleteInstrument = null;
-    private $firstIncompleteField = null;
+    private int $completedCnt;
+    private int $requiredCnt;
+    private ?string $firstIncompleteInstrument;
+    private ?string $firstIncompleteField;
 
-    public function __construct(int $completedCnt = 0, int $requiredCnt= 0, string $firstIncompleteInstrument = null, string $firstIncompleteField = null) {
+    public function __construct(
+        int $completedCnt = 0,
+        int $requiredCnt= 0,
+        string $firstIncompleteInstrument = null,
+        string $firstIncompleteField = null
+        )
+    {
         $this->completedCnt = $completedCnt;
         $this->requiredCnt = $requiredCnt;
         $this->firstIncompleteInstrument = $firstIncompleteInstrument;
         $this->firstIncompleteField = $firstIncompleteField;
     }
 
-    public function setCounts(int $completedCnt, int $requiredCnt) {
+    public function setCounts(int $completedCnt, int $requiredCnt): void
+    {
         $this->completedCnt = $completedCnt;
         $this->requiredCnt = $requiredCnt;
     }
 
-    public function setFirstIncomplete(string $instrument, string $field) {
+    public function setFirstIncomplete(string $instrument, string $field): void
+    {
         if (!isset($this->firstIncompleteField)) {
             $this->firstIncompleteInstrument = $instrument;
             $this->firstIncompleteField = $field;
         }
     }
 
-    public function merge(CompletedFieldCount $inCnt) {
+    public function merge(CompletedFieldCount $inCnt): void
+    {
         $this->completedCnt += $inCnt->completedCnt;
         $this->requiredCnt += $inCnt->requiredCnt;
 
@@ -37,23 +46,28 @@ class CompletedFieldCount
         }
     }
 
-    public function getCompletedCount(): int {
+    public function getCompletedCount(): int
+    {
         return $this->completedCnt;
     }
 
-    public function getRequiredCount(): int {
+    public function getRequiredCount(): int
+    {
         return $this->requiredCnt;
     }
 
-    public function getFirstIncompleteInstrument(): ?string {
+    public function getFirstIncompleteInstrument(): ?string
+    {
         return $this->firstIncompleteInstrument;
     }
 
-    public function getFirstIncompleteField(): ?string {
+    public function getFirstIncompleteField(): ?string
+    {
         return $this->firstIncompleteField;
     }
 
-    public function hasIncompleteField(): bool {
+    public function hasIncompleteField(): bool
+    {
         return isset($this->firstIncompleteField);
     }
 }

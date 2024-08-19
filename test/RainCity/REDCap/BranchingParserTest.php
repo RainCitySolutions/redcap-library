@@ -2,10 +2,9 @@
 namespace RainCity\REDCap;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \RainCity\REDCap\BranchingParser
- */
+#[CoversClass('\RainCity\REDCap\BranchingParser')]
 class BranchingParserTest extends TestCase
 {
     public function testOne () {

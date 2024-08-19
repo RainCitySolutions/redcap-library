@@ -2,12 +2,10 @@
 namespace RainCity\REDCap;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Depends;
 
-/**
- *
- * @covers \RainCity\REDCap\Field
- *
- */
+#[CoversClass('\RainCity\REDCap\Field')]
 class FieldTest extends TestCase
 {
     const TEST_INSTRUMENT_NAME = 'test_instrument';
@@ -150,9 +148,7 @@ class FieldTest extends TestCase
         return $serializedObj;
     }
 
-    /**
-     * @depends testSerialize
-     */
+    #[Depends('testSerialize')]
     public function testUnserialize($serializedObj) // $serialObj is passed from testSerialize
     {
         $localField = $this->getSerializeTestField();   // Assumption: that testSerialize used getSerializeTestField()

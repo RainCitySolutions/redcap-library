@@ -12,11 +12,9 @@ use IU\PHPCap\RedCapProject;
  */
 class InstrumentRecord extends Record
 {
-    /** @var Instrument */
-    private $instrument;
+    private Instrument $instrument;
 
-    /** @var InstrumentRecord */
-    private $nextInstrumentRcd = null;
+    private ?InstrumentRecord $nextInstrumentRcd = null;
 
     /**
      * @var SurveyStatus|SurveyStatus[]
@@ -24,7 +22,7 @@ class InstrumentRecord extends Record
      *  Otherwise an associative array of SurveyStatus objects keyed by event
      *  name.
      */
-    private $status = array();
+    private mixed $status = array();
 
     /**
      * Initialize instance.
@@ -33,7 +31,8 @@ class InstrumentRecord extends Record
      * @param Instrument $instrument An initialized instance of Instrument.
      * @param string $recordId The id of an existing REDCap record to load for this instrument.
      */
-    public function __construct(RedCapProject $proj, Instrument $instrument, string $recordId = null) {
+    public function __construct(RedCapProject $proj, Instrument $instrument, string $recordId = null)
+    {
         $this->instrument = $instrument;
 
         if ($instrument->hasNextInstrument()) {
@@ -50,7 +49,8 @@ class InstrumentRecord extends Record
      *
      * @return Instrument The Instrument instance provided at instantiation.
      */
-    public function getInstrument(): Instrument {
+    public function getInstrument(): Instrument
+    {
         return $this->instrument;
     }
 
@@ -60,7 +60,8 @@ class InstrumentRecord extends Record
      * @return InstrumentRecord|null The next InstrumentRecord in the chain
      *      or null if there is no next record.
      */
-    public function getNextInstrumentRecord(): ?InstrumentRecord {
+    public function getNextInstrumentRecord(): ?InstrumentRecord
+    {
         return $this->nextInstrumentRcd;
     }
 
@@ -78,7 +79,8 @@ class InstrumentRecord extends Record
      *      when no event is provided, the event is not associated with the
      *      instrument or the record is not tracking the event.
      */
-    public function getStatus(string $event = null): SurveyStatus {
+    public function getStatus(string $event = null): SurveyStatus
+    {
         $surveyStatus = null;
 
         if ($this->projectUsesEvents()) {
@@ -106,7 +108,8 @@ class InstrumentRecord extends Record
      *      when no event is provided, the event is not associated with the
      *      instrument or the record is not tracking the event.
      */
-    public function canEdit(?string $event = null): bool {
+    public function canEdit(?string $event = null): bool
+    {
         $canEdit = false;
 
         if ($this->projectUsesEvents()) {
@@ -141,7 +144,8 @@ class InstrumentRecord extends Record
      *      when no event is provided, the event is not associated with the
      *      instrument or the record is not tracking the event.
      */
-    public function notStarted(bool $checkNextInstrument = true, ?string $event = null): bool {
+    public function notStarted(bool $checkNextInstrument = true, ?string $event = null): bool
+    {
         $notStarted = false;
 
         if ($this->projectUsesEvents()) {
@@ -180,7 +184,8 @@ class InstrumentRecord extends Record
      *      when no event is provided, the event is not associated with the
      *      instrument or the record is not tracking the event.
      */
-    public function isComplete(bool $checkNextInstrument = true, ?string $event = null): bool {
+    public function isComplete(bool $checkNextInstrument = true, ?string $event = null): bool
+    {
         $isComplete = false;
 
         if ($this->projectUsesEvents()) {
@@ -235,11 +240,12 @@ class InstrumentRecord extends Record
      * getCumulativeFieldCounts() to fetch the counts of this record and any
      * children.
      *
-     * @param string|null The event to fetch the counts for.
+     * @param string|null $event The event to fetch the counts for.
      *
      * @return CompletedFieldCount A CompletedFieldCount instance.
      */
-    public function getCompletedFieldCounts(?string $event = null): CompletedFieldCount {
+    public function getCompletedFieldCounts(?string $event = null): CompletedFieldCount
+    {
         $fieldCnt = null;
 
         if ($this->instrument->isCAT(false)) {
@@ -261,11 +267,12 @@ class InstrumentRecord extends Record
      * fields and the number of required fields for this InstrumentRecord and
      * any children.
      *
-     * @param string|null The event to fetch the counts for.
+     * @param string|null $event The event to fetch the counts for.
      *
      * @return CompletedFieldCount A CompletedFieldCount instance.
      */
-    public function getCumulativeFieldCounts(?string $event = null): CompletedFieldCount {
+    public function getCumulativeFieldCounts(?string $event = null): CompletedFieldCount
+    {
         $fieldCnt = $this->getCompletedFieldCounts($event);
 
         if ($this->nextInstrumentRcd) {
@@ -283,7 +290,8 @@ class InstrumentRecord extends Record
      *
      * Only acts on the current Instrument/Record. Any next records will take care of it for themselves.
      */
-    protected function initRequiredFieldCounts(?string $event = null): CompletedFieldCount {
+    protected function initRequiredFieldCounts(?string $event = null): CompletedFieldCount
+    {
         // Ignore the record id field
         $reqFieldNames = \array_diff($this->getRequiredFormFieldNames($event), [$this->getRecordIdFieldName()]);
 
@@ -336,7 +344,8 @@ class InstrumentRecord extends Record
      *
      * @return string[]
      */
-    protected function getRequiredFormFieldNames(?string $event = null): array {
+    protected function getRequiredFormFieldNames(?string $event = null): array
+    {
         $reqFieldNames = $this->instrument->getRequiredFormFieldNames();
 
         // TODO: Look through the optional fields to see if any would now be required because their branching case is true.
@@ -354,11 +363,12 @@ class InstrumentRecord extends Record
         return $reqFieldNames;
     }
 
-    private function matchesBranching($branching, ?string $event = null): bool {
-        $parser = new BranchingParser($branching);
+//     private function matchesBranching(string $branching): bool
+//     {
+//         $parser = new BranchingParser($branching);
 
-        return $parser->matches($this);
-    }
+//         return $parser->matches($this);
+//     }
 
     /**
      * Appeands an anchor tag on the end of the url for the field row of the
@@ -393,7 +403,8 @@ class InstrumentRecord extends Record
      *
      * @see \RainCity\REDCap\Record::getFieldValue()
      */
-    public function getFieldValue(string $field, string $event = null): ?string {
+    public function getFieldValue(string $field, string $event = null): ?string
+    {
         $result = null;
 
         if (in_array($field, $this->instrument->getAllFieldNames()) ) {
@@ -416,7 +427,8 @@ class InstrumentRecord extends Record
      *
      * @see \RainCity\REDCap\Record::setFieldValue()
      */
-    public function setFieldValue(string $field, string $value, string $event = null) {
+    public function setFieldValue(string $field, string $value, string $event = null): void
+    {
         if (in_array($field, $this->instrument->getAllFieldNames()) ) {
             parent::setFieldValue($field, $value, $event);
         }
@@ -432,7 +444,8 @@ class InstrumentRecord extends Record
      * {@inheritDoc}
      * @see \RainCity\REDCap\Record::getREDCapArray()
      */
-    public function getREDCapArray(string $event = null): array {
+    public function getREDCapArray(string $event = null): array
+    {
         $result = parent::getREDCapArray($event);
         if (isset($this->nextInstrumentRcd)) {
             $nextResult = $this->nextInstrumentRcd->getREDCapArray($event);
@@ -472,17 +485,21 @@ class InstrumentRecord extends Record
      * {@inheritDoc}
      * @see \RainCity\REDCap\Record::loadRecord()
      */
-    public function loadRecord (array $rcd, ?string $event = null) {
-        parent::loadRecord($rcd, $event);
+    public function loadRecord (array $rcd): bool
+    {
+        $result = parent::loadRecord($rcd);
 
         if ($this->nextInstrumentRcd) {
-            $this->nextInstrumentRcd->loadRecord($rcd, $event);
+            $this->nextInstrumentRcd->loadRecord($rcd);
         }
 
         $this->initSurveyStatus();
+
+        return $result;
     }
 
-    private function initSurveyStatus() {
+    private function initSurveyStatus(): void
+    {
         if ($this->projectUsesEvents()) {
             foreach ($this->getEvents() as $event) {
                 $this->status[$event] = new SurveyStatus($this, $event);
@@ -502,13 +519,14 @@ class InstrumentRecord extends Record
      * inner array. Because of this, the function should only be called from
      * getREDCapArray() were we know this field would have been included.
      *
-     * @param array $nxtRst An array of event data arrays.
+     * @param array<array<string, mixed>> $nxtRst An array of event data arrays.
      * @param string $event The event to look for.
      *
-     * @return array|null The inner event data array if an entry is found with the
+     * @return array<string, mixed>|null The inner event data array if an entry is found with the
      *      specified event. Otherwise returns null.
      */
-    private function findObjWithEvent(array $nxtRst, string $event): ?array {
+    private function findObjWithEvent(array $nxtRst, string $event): ?array
+    {
         $result = null;
 
         foreach($nxtRst as $rcd) {
@@ -529,7 +547,8 @@ class InstrumentRecord extends Record
      * {@inheritDoc}
      * @see \RainCity\REDCap\Record::getEvents()
      */
-    public function getEvents(): array {
+    public function getEvents(): array
+    {
         return $this->instrument->getEvents();
     }
 
@@ -541,7 +560,8 @@ class InstrumentRecord extends Record
      * @return \DateTime|NULL A DateTime instance or null if the Instrument
      *      doesn't have a timestamp.
      */
-    public function getTimestamp(?string $event = null): ?\DateTime {
+    public function getTimestamp(?string $event = null): ?\DateTime
+    {
         $dateTime = null;
 
         $value = parent::getFieldValue($this->instrument->getName().'_timestamp', $event);

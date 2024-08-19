@@ -1,37 +1,34 @@
 <?php
 namespace RainCity\REDCap;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
 use RainCity\DataCache;
 use RainCity\TestHelper\ReflectionHelper;
 
 
-/**
- *
- * @covers \RainCity\REDCap\Manager
- *
- * @covers RainCity\REDCap\Project::__construct
- * @covers RainCity\REDCap\Project::addEvent
- * @covers RainCity\REDCap\Project::getEventNames
- * @covers RainCity\REDCap\Project::addInstrument
- * @covers RainCity\REDCap\Project::getInstrumentNames
- * @covers RainCity\REDCap\Project::getInstruments
- * @covers RainCity\REDCap\Project::getEvents
- * @covers RainCity\REDCap\Event::__construct
- * @covers RainCity\REDCap\Event::getName
- * @covers RainCity\REDCap\Field::__construct
- * @covers RainCity\REDCap\Field::getCheckboxFieldName
- * @covers RainCity\REDCap\Field::getName
- * @covers RainCity\REDCap\Field::getType
- * @covers RainCity\REDCap\Field::isCAT
- * @covers RainCity\REDCap\Field::isRequired
- * @covers RainCity\REDCap\Instrument::__construct
- * @covers RainCity\REDCap\Instrument::addField
- * @covers RainCity\REDCap\Instrument::getName
- * @covers RainCity\REDCap\Instrument::initLogger
- * @covers RainCity\REDCap\Instrument::makeSingularCheckboxesOptional
- * @covers RainCity\REDCap\Instrument::readExportFieldNames
- * @covers RainCity\REDCap\Instrument::readMetadata
- */
+#[CoversClass('\RainCity\REDCap\Manager')]
+#[CoversMethod('RainCity\REDCap\Project', '__construct')]
+#[CoversMethod('RainCity\REDCap\Project', 'addEvent')]
+#[CoversMethod('RainCity\REDCap\Project', 'getEventNames')]
+#[CoversMethod('RainCity\REDCap\Project', 'addInstrument')]
+#[CoversMethod('RainCity\REDCap\Project', 'getInstrumentNames')]
+#[CoversMethod('RainCity\REDCap\Project', 'getInstruments')]
+#[CoversMethod('RainCity\REDCap\Project', 'getEvents')]
+#[CoversMethod('RainCity\REDCap\Event', '__construct')]
+#[CoversMethod('RainCity\REDCap\Event', 'getName')]
+#[CoversMethod('RainCity\REDCap\Field', '__construct')]
+#[CoversMethod('RainCity\REDCap\Field', 'getCheckboxFieldName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getName')]
+#[CoversMethod('RainCity\REDCap\Field', 'getType')]
+#[CoversMethod('RainCity\REDCap\Field', 'isCAT')]
+#[CoversMethod('RainCity\REDCap\Field', 'isRequired')]
+#[CoversMethod('RainCity\REDCap\Instrument', '__construct')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'addField')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'getName')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'makeSingularCheckboxesOptional')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'readExportFieldNames')]
+#[CoversMethod('RainCity\REDCap\Instrument', 'readMetadata')]
 class ManagerTest extends REDCapTestCase
 {
 /*

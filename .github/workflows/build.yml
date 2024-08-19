@@ -49,8 +49,7 @@ jobs:
       # Run the build
       - name: Full build
         run: |
-          PHING_PHAR="bin/phing*.phar"
-          php $PHING_PHAR
+          vendor/bin/robo release
 
       # Save versioned files 
       - name: Commit version files
@@ -120,10 +119,14 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-dev
 
+      - name: Download Robo
+        run: |
+          wget -q https://robo.li/robo.phar
+          chmod +x robo.phar
+
       - name: Create Package
         run: |
-          PHING_PHAR="bin/phing*.phar"
-          php $PHING_PHAR package -Dbuild.version=${{ steps.build-vars.outputs.version }}
+          ./robo.phar package ${{ steps.build-vars.outputs.version }}
 
       - name: Create Release
         id: create-release

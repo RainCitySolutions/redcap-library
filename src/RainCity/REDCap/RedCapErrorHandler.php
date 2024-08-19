@@ -29,7 +29,7 @@ class RedCapErrorHandler extends ErrorHandler
 				        $connectionErrorNumber = null,
 				        $httpStatusCode = null,
 				        $previousException = null
-				        )
+				        ): void
     {
         $this->logger->error(
             "PhpCap Error: {msg}\nError code: {errCode}\nConnection error number: {errNum}\nHttp Status code: {httpCode}\n",

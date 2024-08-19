@@ -3,15 +3,11 @@ namespace RainCity\REDCap;
 
 use IU\PHPCap\PhpCapException;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Log\LoggerInterface;
 use RainCity\TestHelper\ReflectionHelper;
 
-
-/**
- *
- * @covers \RainCity\REDCap\RedCapErrorHandler
- *
- */
+#[CoversClass('\RainCity\REDCap\RedCapErrorHandler')]
 class RedCapErrorHandlerTest extends TestCase
 {
     public function testCtor() {

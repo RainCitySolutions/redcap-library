@@ -70,13 +70,13 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
      * name and the API key.
      *
      * @param string $func The name of the function call.
-     * @param array $args The array of arguments passed to the original call,
+     * @param array<mixed> $args The array of arguments passed to the original call,
      *      retreived via func_get_args().
      *
      * @return mixed The result of the function call retreived from the cache
      *      or the actual call.
      */
-    private function maybeCallParentFunction(string $func, array $args)
+    private function maybeCallParentFunction(string $func, array $args): mixed
     {
         $cacheKey = sprintf('%s-%s-%s', $func, json_encode($args), $this->cacheKey);
 
@@ -117,10 +117,13 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
 
     /**
+     * @param string $format
+     * @return mixed
+     *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportInstruments()
      */
-    public function exportInstruments($format = 'php')
+    public function exportInstruments($format = 'php'): mixed
     {
         $result = null;
 
@@ -142,6 +145,9 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
     /**
      *
+     * @param string[] $arms
+     *
+     * @return mixed
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportInstrumentEventMappings()
      */
@@ -166,10 +172,15 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
 
     /**
+     * @param string[] $fields
+     * @param string[] $forms
+     *
+     * @return mixed
+     *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportMetadata()
      */
-    public function exportMetadata($format = 'php', $fields = array(), $forms = array())
+    public function exportMetadata($format = 'php', $fields = array(), $forms = array()): mixed
     {
         $result = array();
 
@@ -195,6 +206,9 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     }
 
     /**
+     * @param bool|null $compactDisplay
+     * @param int|null $repeatInstance
+     *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportPdfFileOfInstruments()
      */
@@ -228,10 +242,12 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     }
 
     /**
+     * @return mixed
+     *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportProjectInfo()
      */
-    public function exportProjectInfo($format = 'php')
+    public function exportProjectInfo($format = 'php'): mixed
     {
         $result = array();
 
@@ -251,6 +267,11 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     }
 
     /**
+     * @param string[]|null $recordIds
+     * @param string[]|null $fields
+     * @param string[]|null $forms
+     * @param string[]|null $events
+     *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportRecords()
      */
@@ -383,10 +404,15 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     }
 
     /**
+     * @param string $format
+     * @param string[] $arms
+     *
+     * @return array<string, array<string, mixed>>|string
+     *
      * {@inheritdoc}
      * @see \IU\PHPCap\RedCapProject::exportEvents
      */
-    public function exportEvents($format = 'php', $arms = [])
+    public function exportEvents($format = 'php', $arms = []): array|string
     {
         $result = array();
 
@@ -404,5 +430,4 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         return $result;
     }
-
 }

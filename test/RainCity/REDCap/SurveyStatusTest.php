@@ -2,15 +2,15 @@
 namespace RainCity\REDCap;
 
 
-/**
- * @covers \RainCity\REDCap\SurveyStatus
- *
- * @covers RainCity\REDCap\CompletedFieldCount::__construct
- * @covers RainCity\REDCap\CompletedFieldCount::getCompletedCount
- * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteField
- * @covers RainCity\REDCap\CompletedFieldCount::getFirstIncompleteInstrument
- * @covers RainCity\REDCap\CompletedFieldCount::getRequiredCount
- */
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversMethod;
+
+#[CoversClass('\RainCity\REDCap\SurveyStatus')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', '__construct')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getCompletedCount')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getFirstIncompleteField')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getFirstIncompleteInstrument')]
+#[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getRequiredCount')]
 class SurveyStatusTest extends REDCapTestCase
 {
     /** @var Instrument */
@@ -79,7 +79,7 @@ class SurveyStatusTest extends REDCapTestCase
         $this->mockInst->method('isCAT')->willReturn(true);
 
         $this->mockInstRcd->method('isLoaded')->willReturn(true);
-        $this->mockInstRcd->method('getFieldValue')->will($this->returnCallback(function($field) {
+        $this->mockInstRcd->method('getFieldValue')->willReturnCallback(function($field) {
             $result = null;
 
             switch($field) {
@@ -91,7 +91,7 @@ class SurveyStatusTest extends REDCapTestCase
                     break;
             }
             return $result;
-        } ) );
+        } );
         $this->mockInstRcd->method('getCompletedFieldCounts')->willReturn(new CompletedFieldCount(0, 10));
 
         $status = new SurveyStatus($this->mockInstRcd);
@@ -135,7 +135,7 @@ class SurveyStatusTest extends REDCapTestCase
         $this->mockInst->method('isCAT')->willReturn(false);
 
         $this->mockInstRcd->method('isLoaded')->willReturn(true);
-        $this->mockInstRcd->method('getFieldValue')->will($this->returnCallback(function($field) {
+        $this->mockInstRcd->method('getFieldValue')->willReturnCallback(function($field) {
             $result = null;
 
             switch($field) {
@@ -147,7 +147,7 @@ class SurveyStatusTest extends REDCapTestCase
                     break;
             }
             return $result;
-        } ) );
+        } );
 
         $this->mockInstRcd->method('getCompletedFieldCounts')->willReturn(new CompletedFieldCount(0, 10));
 
@@ -170,7 +170,7 @@ class SurveyStatusTest extends REDCapTestCase
         $this->mockInst->method('isCAT')->willReturn(false);
 
         $this->mockInstRcd->method('isLoaded')->willReturn(true);
-        $this->mockInstRcd->method('getFieldValue')->will($this->returnCallback(function($field) {
+        $this->mockInstRcd->method('getFieldValue')->willReturnCallback(function($field) {
             $result = null;
 
             switch($field) {
@@ -182,7 +182,7 @@ class SurveyStatusTest extends REDCapTestCase
                     break;
             }
             return $result;
-        } ) );
+        } );
 
         $this->mockInstRcd->method('getCompletedFieldCounts')->willReturn(new CompletedFieldCount(7, 7));
 
@@ -205,7 +205,7 @@ class SurveyStatusTest extends REDCapTestCase
         $this->mockInst->method('isCAT')->willReturn(false);
 
         $this->mockInstRcd->method('isLoaded')->willReturn(true);
-        $this->mockInstRcd->method('getFieldValue')->will($this->returnCallback(function($field) {
+        $this->mockInstRcd->method('getFieldValue')->willReturnCallback(function($field) {
             $result = null;
 
             switch($field) {
@@ -217,7 +217,7 @@ class SurveyStatusTest extends REDCapTestCase
                     break;
             }
             return $result;
-        } ) );
+        } );
 
         $this->mockInstRcd->method('getCompletedFieldCounts')->willReturn(new CompletedFieldCount(0, 10));
 
@@ -240,7 +240,8 @@ class SurveyStatusTest extends REDCapTestCase
         $this->mockInst->method('isCAT')->willReturn(false);
 
         $this->mockInstRcd->method('isLoaded')->willReturn(true);
-        $this->mockInstRcd->method('getFieldValue')->will($this->returnCallback(function($field) {
+        $this->mockInstRcd->method('getFieldValue')->willReturnCallback(
+            function($field) {
             $result = null;
 
             switch($field) {
@@ -252,7 +253,8 @@ class SurveyStatusTest extends REDCapTestCase
                     break;
             }
             return $result;
-        } ) );
+        }
+        );
 
         $this->mockInstRcd->method('getCompletedFieldCounts')->willReturn(new CompletedFieldCount(0, 10));
 

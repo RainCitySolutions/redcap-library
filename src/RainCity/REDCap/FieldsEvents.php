@@ -12,12 +12,19 @@ class FieldsEvents implements \Serializable
     /** @var string[] Array of field names */
     public $fieldNames;
 
-    public function __construct(array $eventNames = array(), array $fieldNames = array()) {
+    /**
+     *
+     * @param string[] $eventNames
+     * @param string[] $fieldNames
+     */
+    public function __construct(array $eventNames = array(), array $fieldNames = array())
+    {
         $this->eventNames = $eventNames;
         $this->fieldNames = $fieldNames;
     }
 
-    public function add(FieldsEvents $fieldsEvents) {
+    public function add(FieldsEvents $fieldsEvents): void
+    {
         $this->eventNames =  array_unique(array_merge($this->eventNames, $fieldsEvents->eventNames));
         $this->fieldNames = array_unique(array_merge($this->fieldNames, $fieldsEvents->fieldNames));
     }

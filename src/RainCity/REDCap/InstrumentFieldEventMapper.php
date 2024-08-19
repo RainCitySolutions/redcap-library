@@ -8,12 +8,18 @@ use RainCity\Singleton;
 class InstrumentFieldEventMapper
     extends Singleton
 {
-    private $mapEventToFields = array();
+    /** @var array<string, array<string>> */
+    private array $mapEventToFields = array();
 
     const INSTRUMENT_FIELD_EVENT_MAP = 'REDCapInstFldEvtMap';
 
-    protected function __construct($args) {
-        if (is_array($args) && !empty($args)) {
+    /**
+     *
+     * @param array<mixed> $args
+     */
+    protected function __construct(array $args)
+    {
+        if (!empty($args)) {
             $proj = $args[0];
 
             /** @var CacheInterface */
@@ -62,7 +68,14 @@ class InstrumentFieldEventMapper
         }
     }
 
-    private function loadFieldToExportFieldMap(array $exportFieldNames): array {
+    /**
+     *
+     * @param array<array<string, string>> $exportFieldNames
+     *
+     * @return array<array<string>>
+     */
+    private function loadFieldToExportFieldMap(array $exportFieldNames): array
+    {
         $mapFieldToExportFields = array();
 
             // walk throughthe array adding each export field name to its form name entry
@@ -76,7 +89,14 @@ class InstrumentFieldEventMapper
         return $mapFieldToExportFields;
     }
 
-    private function loadFormToFieldsMap(array $exportMetadata): array {
+    /**
+     *
+     * @param array<array<string, string>> $exportMetadata
+     *
+     * @return array<array<string>>
+     */
+    private function loadFormToFieldsMap(array $exportMetadata): array
+    {
         $mapFormToFields = array();
 
         array_walk($exportMetadata, function ($entry, $ndx) use (&$mapFormToFields) { // NOSONAR - ignore $ndx
@@ -89,7 +109,14 @@ class InstrumentFieldEventMapper
         return $mapFormToFields;
     }
 
-    private function loadEventToInstrumentMap(array $exportInstrumentEventMappings) {
+    /**
+     *
+     * @param array<array<string, string>> $exportInstrumentEventMappings
+     *
+     * @return array<string, array<string>>
+     */
+    private function loadEventToInstrumentMap(array $exportInstrumentEventMappings): array
+    {
         $mapEventToInstruments = array();
 
         // walk through the array adding each form to its event entry
@@ -103,8 +130,20 @@ class InstrumentFieldEventMapper
         return $mapEventToInstruments;
     }
 
-    public function isValidField(string $field) {
-        // TODO: implement
+    public function isValidField(string $field): bool
+    {
+        $result = false;
+
+        foreach($this->mapEventToFields as $eventFieldList) {
+            foreach($eventFieldList as $eventField) {
+                if ($eventField == $field) {
+                    $result = true;
+                    break;
+                }
+            }
+        }
+
+        return $result;
     }
 
 }

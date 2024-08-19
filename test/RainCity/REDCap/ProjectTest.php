@@ -1,13 +1,13 @@
 <?php
 namespace RainCity\REDCap;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Depends;
 use RainCity\TestHelper\ReflectionHelper;
 
-/**
- *
- * @covers \RainCity\REDCap\Project
- *
- */
+#[CoversClass('\RainCity\REDCap\Project')]
+#[CoversClass('\RainCity\REDCap\Event')]
+#[CoversClass('\RainCity\REDCap\Instrument')]
 class ProjectTest extends REDCapTestCase
 {
     const TEST_INSTRUMENT_NAME = 'testInstrument';
@@ -88,9 +88,7 @@ class ProjectTest extends REDCapTestCase
         return $project;
     }
 
-    /**
-     * @depends testAddInstrument
-     */
+    #[Depends('testAddInstrument')]
     public function testGetInstrument($project) {
         $instrument = $project->getInstrument(self::TEST_INSTRUMENT_NAME);
 
@@ -106,9 +104,7 @@ class ProjectTest extends REDCapTestCase
         $this->assertNull($event);
     }
 
-    /**
-     * @depends testAddInstrument
-     */
+    #[Depends('testAddInstrument')]
     public function testGetInstrumentNames($project) {
         $names = $project->getInstrumentNames();
 
@@ -116,9 +112,7 @@ class ProjectTest extends REDCapTestCase
         $this->assertContains(self::TEST_INSTRUMENT_NAME, $names);
     }
 
-    /**
-     * @depends testAddInstrument
-     */
+    #[Depends('testAddInstrument')]
     public function testGetInstruments($project) {
         $instruments = $project->getInstruments();
 
@@ -140,9 +134,7 @@ class ProjectTest extends REDCapTestCase
         return $project;
     }
 
-    /**
-     * @depends testAddEvent
-     */
+    #[Depends('testAddEvent')]
     public function testGetEvent($project) {
         $event = $project->getEvent(self::TEST_EVENT_NAME);
 
@@ -158,9 +150,7 @@ class ProjectTest extends REDCapTestCase
         $this->assertNull($event);
     }
 
-    /**
-     * @depends testAddEvent
-     */
+    #[Depends('testAddEvent')]
     public function testGetEventNames($project) {
         $names = $project->getEventNames();
 
@@ -168,9 +158,7 @@ class ProjectTest extends REDCapTestCase
         $this->assertContains(self::TEST_EVENT_NAME, $names);
     }
 
-    /**
-     * @depends testAddEvent
-     */
+    #[Depends('testAddEvent')]
     public function testGetEvents(Project $project) {
         $events = $project->getEvents();
 
@@ -192,9 +180,16 @@ class ProjectTest extends REDCapTestCase
     public function testSerialize() {
         $data = self::getTestProject();
 
+        $testEvent = new Event([
+            'unique_event_name' => self::TEST_EVENT_NAME
+            ]
+        );
+
+        $testInstrument = new Instrument(self::TEST_INSTRUMENT_NAME, self::TEST_INSTRUMENT_NAME);
+
         $project = new Project($data);
-        $project->addEvent($this->getTestEvent());
-        $project->addInstrument($this->getTestInstrument());
+        $project->addEvent($testEvent);
+        $project->addInstrument($testInstrument);
 
         $serializedObj = $project->serialize();
 
@@ -213,9 +208,7 @@ class ProjectTest extends REDCapTestCase
         return $serializedObj;
     }
 
-    /**
-     * @depends testSerialize
-     */
+    #[Depends('testSerialize')]
     public function testUnserialize($serializedObj) // $serialObj is passed from testSerialize
     {
         $data = self::getTestProject();    // Assumption: that testSerialize used getTestProject()

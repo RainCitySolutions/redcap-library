@@ -2,13 +2,10 @@
 namespace RainCity\REDCap;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use RainCity\TestHelper\ReflectionHelper;
 
-/**
- * CompletedFieldCount test case.
- *
- * @covers \RainCity\REDCap\CompletedFieldCount
- */
+#[CoversClass('\RainCity\REDCap\CompletedFieldCount')]
 class CompletedFieldCountTest extends TestCase
 {
     public function testCtor_noArgs() {

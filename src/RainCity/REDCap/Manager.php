@@ -1,30 +1,24 @@
 <?php
 namespace RainCity\REDCap;
 
-use RainCity\Logging\Logger;
 use IU\PHPCap\RedCapProject;
 use RainCity\DataCache;
 use RainCity\MethodLogger;
-use Psr\Log\LoggerInterface;
 
 
 class Manager
 {
-    /** @var LoggerInterface */
-    private $logger;
-
     /** @var RedCapProject */
-    private $redcapProject;
+    private RedCapProject $redcapProject;
 
     /** @var DataCache */
-    private $cache;
+    private ?DataCache $cache;
 
     /** @var string */
-    private $cacheKey;
+    private string $cacheKey;
 
-    public function __construct(RedCapProject $redcapProject, DataCache $cache = null) {
-        $this->logger = Logger::getLogger(get_class($this));
-
+    public function __construct(RedCapProject $redcapProject, DataCache $cache = null)
+    {
         $this->redcapProject = $redcapProject;
         $this->cache = $cache;
 
@@ -44,7 +38,8 @@ class Manager
 */
     }
 
-    public function getProject(): ?Project {
+    public function getProject(): ?Project
+    {
         $projectCacheKey = 'RedcapProject-'.$this->cacheKey;
 
         $project = isset($this->cache) ? $this->cache->get($projectCacheKey) : null;
@@ -59,13 +54,23 @@ class Manager
         return $project;
     }
 
-    public function getInstruments(): array {
+    /**
+     *
+     * @return Instrument[]
+     */
+    public function getInstruments(): array
+    {
         $project = $this->getProject();
 
         return $project->getInstruments();
     }
 
-    public function getEvents(): array {
+    /**
+     *
+     * @return Event[]
+     */
+    public function getEvents(): array
+    {
         $project = $this->getProject();
 
         return $project->getEvents();
@@ -74,18 +79,24 @@ class Manager
     /**
      * Load a record from REDCap
      *
-     * @param string    $recordId   The identifier for the record to be loaded.
-     * @param array     $fields     The fields to be loaded. If not specifed
+     * @param string        $recordId   The identifier for the record to be loaded.
+     * @param string[]|null $fields     The fields to be loaded. If not specifed
      *      or an empty array all fields will be loaded.
-     * @param array     $instruments The instruments to be loaded. If not
+     * @param string[]|null $instruments The instruments to be loaded. If not
      *      specified or an empty array all instrument fields will be loaded.
-     * @param array     $events     The events to be loaded. If not specified
+     * @param string[]|null $events     The events to be loaded. If not specified
      *      or an empty array all events will be loaded.
      *
      * @return Record|NULL  A Record instance representing the REDCap record
      *      or null if the record could not be loaded.
      */
-    public function fetchRecord (string $recordId, array $fields = array(), array $instruments = array(), array $events = array()): ?Record {
+    public function fetchRecord (
+        string $recordId,
+        ?array $fields = array(),
+        ?array $instruments = array(),
+        ?array $events = array()
+        ): ?Record
+    {
         $record = new Record($this->redcapProject, $fields, null, $instruments, $events);
 
         if (!$record->loadRecordById($recordId)) {
@@ -96,7 +107,8 @@ class Manager
     }
 
 
-    private function loadProject(): ?Project {
+    private function loadProject(): ?Project
+    {
         $project = null;
 
         $projInfo = $this->redcapProject->exportProjectInfo();
@@ -118,7 +130,8 @@ class Manager
      * @param Project $project The \RainCity\REDCap\Project to load the
      *      instruments into.
      */
-    private function loadInstruments(Project $project) {
+    private function loadInstruments(Project $project): void
+    {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
         $fieldnames = $this->redcapProject->exportFieldNames();
@@ -138,7 +151,8 @@ class Manager
      * @param Project $project The \RainCity\REDCap\Project instance to load
      *      the events into.
      */
-    private function loadEvents(Project $project) {
+    private function loadEvents(Project $project): void
+    {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
         $events = $this->redcapProject->exportEvents();

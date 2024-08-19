@@ -2,12 +2,10 @@
 namespace RainCity\REDCap;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Depends;
 
-/**
- *
- * @covers \RainCity\REDCap\Event
- *
- */
+#[CoversClass('\RainCity\REDCap\Event')]
 class EventTest extends TestCase
 {
     private $testEvent = array (
@@ -51,9 +49,7 @@ class EventTest extends TestCase
         return $serialObj;
     }
 
-    /**
-     * @depends testSerialize
-     */
+    #[Depends('testSerialize')]
     public function testUnserialize(string $serialObj)
     {
         $reflection = new \ReflectionClass(Event::class);

@@ -3,9 +3,8 @@ namespace RainCity\REDCap;
 
 class BranchingParser
 {
-    public function __construct(string $branchingStr) {
-        $matches = array();
-
+    public function __construct(string $branchingStr)
+    {
         $expression = strtolower($branchingStr);
         $expression = str_replace("\n", ' ', $expression);
         $expression = preg_replace('/ *or */', ' | ', $expression);
@@ -24,25 +23,29 @@ class BranchingParser
 
 //        lapply(l, function(x) ifelse(x=="", NA, parse(text=x)))
 
-//        if (preg_match_all('([.*]\b?(=!).*)', $branching, $matches))
-        {
+//         $matches = array();
 
-        }
+//         if (preg_match_all('([.*]\b?(=!).*)', $branching, $matches))
+//         {
 
+//         }
     }
 
-    public function matches(InstrumentRecord $instRcd, ?string $event = null): bool {
+    public function matches(InstrumentRecord $instRcd, ?string $event = null): bool
+    {
+        $matches = false;
+
         // parse the branching
         $field = '';
         $branchValue = '';
 
-        $fieldValue = $this->getFieldValue($field, $event);
+        $fieldValue = $instRcd->getFieldValue($field, $event);
 
         if ($fieldValue == $branchValue) {
             $matches = true;
         }
 
-
+        return $matches;
     }
 }
 

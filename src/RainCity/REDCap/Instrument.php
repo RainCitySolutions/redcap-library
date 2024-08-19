@@ -2,7 +2,6 @@
 namespace RainCity\REDCap;
 
 use RainCity\SerializeAsArrayTrait;
-use RainCity\Logging\Logger;
 use Serializable;
 
 /**
@@ -13,53 +12,48 @@ class Instrument implements Serializable
 {
     use SerializeAsArrayTrait {
         __serialize as protected traitSerialize;
-        __unserialize as protected traitUnserialize;
     }
 
     /*
      * The following fields are serialized, for storage in the instrument
      * cache as they are generic to all records/users.
      */
-    /** @var string */
-    private $instrumentName;
-    /** @var string */
-    private $instrumentLabel;
-    /** @var bool Is instrument a CAT */
-    private $isCAT = false;
-    /** @var bool Does instrument have input fields */
-    private $hasInputFields = false;
+    private string $instrumentName;
+    private string $instrumentLabel;
+    private bool $isCAT = false;
+    private bool $hasInputFields = false;
     /** @var Field[] Associative array where the key is the field name */
-    private $requiredFields = array();
+    private array $requiredFields = array();
     /** @var Field[] Associative array where the key is the field name */
-    private $optionalFields = array();
+    private array $optionalFields = array();
     /** @var string[] Array of implied field names */
-    private $impliedFields = array();
+    private array $impliedFields = array();
     /** @var string[] Array of event names */
-    private $events = array();
-
-    /*
-     * The following fields are not searialized.
-     */
-    /** @var Logger Logger instance */
-    private $logger;
+    private array $events = array();
 
     /** @var Instrument Next instrument if this instrument is setup for Auto-Continue, otherwise null */
-    private $nextInstrument = null;
-
-    private $skippedTypes = array();
+    private ?Instrument $nextInstrument = null;
+    /** @var string[] */
+    private array $skippedTypes = array();
 
     /**
      * Construct an Instrument instance using data retreived from REDCap.
      *
      * @param string $instrumentName  The name of the form (from exportInstruments)
      * @param string $instrumentLabel The label for the from (from exportInstruments)
-     * @param array $fieldNames       The field names (from exportFieldNames)
-     * @param array $metadata         The field data (from exportMetadata)
-     * @param array $eventMappings    The event data (from exportInstrumentEventMapping)
+     * @param array<string, array<string, string>> $fieldNames       The field names (from exportFieldNames)
+     * @param array<array<string, mixed>> $metadata         The field data (from exportMetadata)
+     * @param array<array<string, string>> $eventMappings    The event data (from exportInstrumentEventMapping)
      *      if the instrument is part of a multi-event project.
      */
-    public function __construct(string $instrumentName, string $instrumentLabel, array $fieldNames, array $metadata, array $eventMappings = array()) {
-        $this->initLogger();
+    public function __construct(
+        string $instrumentName,
+        string $instrumentLabel,
+        array $fieldNames = [],
+        array $metadata = [],
+        array $eventMappings = []
+        )
+    {
         $this->instrumentName = $instrumentName;
         $this->instrumentLabel = $instrumentLabel;
 
@@ -79,7 +73,14 @@ class Instrument implements Serializable
         }
     }
 
-    private function readExportFieldNames(array $fieldNames): array {
+    /**
+     *
+     * @param array<string, array<string, string>> $fieldNames
+     *
+     * @return array<string, array<string>>
+     */
+    private function readExportFieldNames(array $fieldNames): array
+    {
         $exportFieldNames = array();
 
         foreach ($fieldNames as $entry) {
@@ -92,7 +93,14 @@ class Instrument implements Serializable
         return $exportFieldNames;
     }
 
-    private function readMetadata(array $metadata, string $instrumentName, array $exportFieldNames) {
+    /**
+     *
+     * @param array<array<string, mixed>> $metadata
+     * @param string $instrumentName
+     * @param array<string, array<string>> $exportFieldNames
+     */
+    private function readMetadata(array $metadata, string $instrumentName, array $exportFieldNames): void
+    {
         foreach($metadata as $field) {
             if ($instrumentName === $field['form_name'] &&
                 // Some fields, such as descriptive, aren't in the exported
@@ -107,16 +115,15 @@ class Instrument implements Serializable
         }
     }
 
-    private function initLogger() {
-        $this->logger = Logger::getLogger(get_class($this));
-    }
 
     /**
      * Look for any singular checkbox fields and make them optional.
      *
      * A singular checkbox is basically a toggle. It is either set or not.
      */
-    private function makeSingularCheckboxesOptional() {
+    private function makeSingularCheckboxesOptional(): void
+    {
+        /** @var array<string, array<Field>> */
         $checkboxFields = array();
 
         foreach($this->requiredFields as $field) {
@@ -124,14 +131,14 @@ class Instrument implements Serializable
                 $fieldname = $field->getCheckboxFieldName();
 
                 if (!isset($checkboxFields[$fieldname])) {
-                    $checkboxFields[$fieldname] = array();
+                    $checkboxFields[$fieldname] = [];
                 }
-                $fieldList = array_push($checkboxFields[$fieldname], $field);
+                $checkboxFields[$fieldname][] = $field;
             }
         }
 
         foreach($checkboxFields as $fieldList) {
-            if (1 == count($fieldList)) {
+            if (1 === count($fieldList)) {
                 $field = array_pop($fieldList);
                 unset ($this->requiredFields[$field->getName()]);
                 $this->optionalFields[$field->getName()] = $field;
@@ -139,15 +146,18 @@ class Instrument implements Serializable
         }
     }
 
-    public function getName(): string {
+    public function getName(): string
+    {
         return $this->instrumentName;
     }
 
-    public function getLabel(): string {
+    public function getLabel(): string
+    {
         return $this->instrumentLabel;
     }
 
-    public function isCAT(bool $checkNextInstrument = true): bool {
+    public function isCAT(bool $checkNextInstrument = true): bool
+    {
         $isCat = $this->isCAT;
 
         if (!$isCat && $checkNextInstrument && !is_null($this->nextInstrument)) {
@@ -167,7 +177,8 @@ class Instrument implements Serializable
      *
      * @return string[]
      */
-    public function getRequiredRecordFieldNames(): array {
+    public function getRequiredRecordFieldNames(): array
+    {
         return array_keys($this->requiredFields);
     }
 
@@ -184,7 +195,8 @@ class Instrument implements Serializable
      *
      * @return string[]
      */
-    public function getRequiredFormFieldNames(): array {
+    public function getRequiredFormFieldNames(): array
+    {
         return $this->collapseFieldnames(array_keys($this->requiredFields));
     }
 
@@ -192,7 +204,8 @@ class Instrument implements Serializable
      *
      * @return Field[]
      */
-    public function getRequiredFields(): array {
+    public function getRequiredFields(): array
+    {
         return $this->requiredFields;
     }
 
@@ -206,7 +219,8 @@ class Instrument implements Serializable
      *
      * @return string[]
      */
-    public function getOptionalRecordFieldNames(): array {
+    public function getOptionalRecordFieldNames(): array
+    {
         return array_keys($this->optionalFields);
     }
 
@@ -223,7 +237,8 @@ class Instrument implements Serializable
      *
      * @return string[]
      */
-    public function getOptionalFormFieldNames(): array {
+    public function getOptionalFormFieldNames(): array
+    {
         return $this->collapseFieldnames(array_keys($this->optionalFields));
     }
 
@@ -231,14 +246,16 @@ class Instrument implements Serializable
      *
      * @return Field[]
      */
-    public function getOptionalFields(): array {
+    public function getOptionalFields(): array
+    {
         return $this->optionalFields;
     }
 
     /**
      * @return string[]
      */
-    public function getAllFieldNames(): array {
+    public function getAllFieldNames(): array
+    {
         return array_merge($this->getRequiredRecordFieldNames(), $this->getOptionalRecordFieldNames(), $this->impliedFields);
     }
 
@@ -246,15 +263,18 @@ class Instrument implements Serializable
      *
      * @return Field[]
      */
-    public function getAllFields(): array {
+    public function getAllFields(): array
+    {
         return array_merge($this->getRequiredFields(), $this->getOptionalFields());
     }
 
-    public function hasInputs(): bool {
+    public function hasInputs(): bool
+    {
         return $this->hasInputFields;
     }
 
-    public function setNextInstrument(Instrument $nextInstrument) {
+    public function setNextInstrument(Instrument $nextInstrument): void
+    {
         $this->nextInstrument = $nextInstrument;
     }
 
@@ -263,7 +283,8 @@ class Instrument implements Serializable
      *
      * @return boolean Returns true if the instrument has a next instrument, otherwise returns false.
      */
-    public function hasNextInstrument(): bool {
+    public function hasNextInstrument(): bool
+    {
         return !is_null($this->nextInstrument);
     }
 
@@ -273,11 +294,13 @@ class Instrument implements Serializable
      * @return ?Instrument The next instrument in the Auto-Continue sequence if there is one.
      *      Otherwise returns null.
      */
-    public function getNextInstrument(): ?Instrument {
+    public function getNextInstrument(): ?Instrument
+    {
         return $this->nextInstrument;
     }
 
-    protected function addField(Field $field) {
+    public function addField(Field $field): void
+    {
         if ($field->isCAT()) {
             $this->isCAT = true;
         }
@@ -311,7 +334,12 @@ class Instrument implements Serializable
         }
     }
 
-    public function getEvents(): array {
+    /**
+     *
+     * @return string[]
+     */
+    public function getEvents(): array
+    {
         return $this->events;
     }
 
@@ -321,7 +349,8 @@ class Instrument implements Serializable
      *
      * @return string[]
      */
-    private function collapseFieldnames(array $fieldnames): array {
+    private function collapseFieldnames(array $fieldnames): array
+    {
         $result = array();
 
         foreach ($fieldnames as $fieldname) {
@@ -342,22 +371,18 @@ class Instrument implements Serializable
         return $result;
     }
 
+    /**
+     *
+     * @return array<string, mixed>
+     */
     public function __serialize(): array
     {
         $vars = $this->traitSerialize();
 
         // Don't persist these vars
-        unset($vars['logger']);
         unset($vars['nextInstrument']);
         unset($vars['skippedTypes']);
 
         return $vars;
-    }
-
-    public function __unserialize(array $data): void
-    {
-        $this->traitUnserialize($data);
-
-        $this->initLogger();
     }
 }

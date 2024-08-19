@@ -2,15 +2,13 @@
 namespace RainCity\REDCap;
 
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use RainCity\TestHelper\ReflectionHelper;
 
-/**
- *
- * @covers \RainCity\REDCap\Record
- *
- */
+#[CoversClass('\RainCity\REDCap\Record')]
 class RecordTest extends REDCapTestCase
 {
+    private const SHOULD_BE_NO_FIELD_DATA = 'There should not be any field data';
     //***********************************************************************
     //***********************************************************************
     //* Constructor tests
@@ -478,7 +476,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -512,7 +510,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -531,7 +529,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -550,7 +548,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -567,7 +565,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -589,7 +587,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -610,7 +608,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -631,7 +629,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -653,7 +651,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -817,7 +815,7 @@ class RecordTest extends REDCapTestCase
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
 
-        $this->assertEmpty($fields, 'There should not be any field data');
+        $this->assertEmpty($fields, self::SHOULD_BE_NO_FIELD_DATA);
     }
 
     /**
@@ -2363,6 +2361,9 @@ class RecordTest extends REDCapTestCase
         $this->assertEquals($testRcd[self::TEST_EVENT_C][self::SHORTNAME_FIELD], $obj->getMostRecentFieldValue(self::SHORTNAME_FIELD));
     }
 
+/*
+ *  isValidRedcapEntry() currently commented out
+ *
     public function testIsValidRedcapEntry_emptyArray() {
         $testObj = new Record($this->stubRedcapProj);
         $testEntry = array();
@@ -2416,7 +2417,11 @@ class RecordTest extends REDCapTestCase
 
         $this->assertTrue($result);
     }
+*/
 
+/*
+ *  isValidRedcapStructure() currently commented out
+ *
     public function testIsValidRedcapStructure_emptyArray() {
         $testObj = new Record($this->stubRedcapProj);
         $testEntry = array();
@@ -2461,4 +2466,5 @@ class RecordTest extends REDCapTestCase
 
         $this->assertTrue($result);
     }
+*/
 }

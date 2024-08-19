@@ -20,13 +20,13 @@ class SurveyStatus
     const CANT_EDIT         = 0x80;
     //    const CAT_COMPLETE = 89;
 
-    private $status = self::UNKNOWN;
+    private int $status = self::UNKNOWN;
 
-    /** @var string First incomplete instrument */
-    private $firstIncompleteInstrument;
+    /** @var string|null First incomplete instrument */
+    private ?string $firstIncompleteInstrument = null;
 
-    /** @var string First incomplete field in the incomplete instrument */
-    private $firstIncompleteField;
+    /** @var string|null First incomplete field in the incomplete instrument */
+    private ?string $firstIncompleteField = null;
 
     /**
      *
@@ -73,27 +73,53 @@ class SurveyStatus
         }
     }
 
-    public function isRedcapComplete(): bool {
+    /**
+     *
+     * @return string|NULL The name of the first incomplete instrument, or
+     *      null if there are no incomplete instruments.
+     */
+    public function getFirstIncompleteInstrument(): ?string
+    {
+        return $this->firstIncompleteInstrument;
+    }
+
+    /**
+     *
+     * @return string|NULL The name of the first incomplete field, or null if
+     *      there are no incomplete fields.
+     */
+    public function getFirstIncompleteField(): ?string
+    {
+        return $this->firstIncompleteField;
+    }
+
+    public function isRedcapComplete(): bool
+    {
         return ($this->status & self::REDCAP_COMPLETE) != 0;
     }
 
-    public function isRedcapIncomplete(): bool {
+    public function isRedcapIncomplete(): bool
+    {
         return ($this->status & self::REDCAP_COMPLETE) == 0;
     }
 
-    public function isRedcapSurveyIncomplete(): bool {
+    public function isRedcapSurveyIncomplete(): bool
+    {
         return ($this->status & self::REDCAP_SURVEY_INCOMPLETE) != 0;
     }
 
-    public function notStarted (): bool {
+    public function notStarted (): bool
+    {
         return ($this->status & self::NOT_STARTED) != 0;
     }
 
-    public function isComplete (): bool {
+    public function isComplete (): bool
+    {
         return ($this->status & self::COMPLETE) != 0;
     }
 
-    public function canEdit (): bool {
+    public function canEdit (): bool
+    {
         return ($this->status & self::CANT_EDIT) == 0;
     }
 
@@ -105,7 +131,8 @@ class SurveyStatus
      * @param string $redcapTimestamp The timestamp when a survey was
      *        completed. May be an empty string or "[not completed]".
      */
-    private function setRedcapStatus(int $redcapStatus, string $redcapTimestamp) {
+    private function setRedcapStatus(int $redcapStatus, string $redcapTimestamp): void
+    {
         switch ($redcapStatus)
         {
             case 0:
@@ -127,7 +154,8 @@ class SurveyStatus
         }
     }
 
-    public function __toString(): string {
+    public function __toString(): string
+    {
         $states = array();
 
         if ($this->notStarted()) { $states[] = 'Not Started'; }

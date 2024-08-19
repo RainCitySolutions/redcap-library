@@ -1,6 +1,7 @@
-.settings/
-build/
-report/
-vendor/
+/.settings/
+/.phpunit.cache/
+/build/
+/report/
+/vendor/
 coverage.db
-.phpunit.cache/
+.phpunit.result.cache
