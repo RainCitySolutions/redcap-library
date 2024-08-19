@@ -18,7 +18,7 @@ jobs:
            
       # Checkout our code 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -34,7 +34,7 @@ jobs:
       # Fetch the vendor folder from the cache, keyed off the composer.lock file 
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -63,7 +63,7 @@ jobs:
           echo "version-commit-ref=$(git show-ref --heads -s)" >>build.properties
 
       - name: Save Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-properties
           path: build.properties
@@ -76,7 +76,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-properties
 
@@ -96,7 +96,7 @@ jobs:
           unset IFS
     
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.version-commit-ref }}
 
