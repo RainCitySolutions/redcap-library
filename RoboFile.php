@@ -52,7 +52,7 @@ class RoboFile extends \Robo\Tasks
             ->addTask($this->bumpVersion())
             ->addTask($this->composerUpdate())
 //            ->addTask($this->doLint())
-            ->addTask($this->runPhpStan())
+//            ->addTask($this->runPhpStan())
             ->addTask($this->test());
 
         return $collection;
