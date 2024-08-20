@@ -4,6 +4,7 @@ namespace RainCity\REDCap;
 use IU\PHPCap\PhpCapException;
 use RainCity\DataCache;
 use RainCity\Logging\Logger;
+use Psr\SimpleCache\CacheInterface;
 
 
 /**
@@ -20,11 +21,8 @@ use RainCity\Logging\Logger;
  */
 class RedCapProject extends \IU\PHPCap\RedCapProject
 {
-    /** @var DataCache */
-    private $cache;
-
-    /** @var string */
-    private $cacheKey;
+    private CacheInterface $cache;
+    private string $cacheKey;
 
     public function __construct(
         $apiUrl,

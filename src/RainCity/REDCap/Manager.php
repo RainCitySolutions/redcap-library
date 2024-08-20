@@ -2,22 +2,18 @@
 namespace RainCity\REDCap;
 
 use IU\PHPCap\RedCapProject;
-use RainCity\DataCache;
 use RainCity\MethodLogger;
+use Psr\SimpleCache\CacheInterface;
 
 
 class Manager
 {
-    /** @var RedCapProject */
     private RedCapProject $redcapProject;
+    private ?CacheInterface $cache;
 
-    /** @var DataCache */
-    private ?DataCache $cache;
-
-    /** @var string */
     private string $cacheKey;
 
-    public function __construct(RedCapProject $redcapProject, DataCache $cache = null)
+    public function __construct(RedCapProject $redcapProject, ?CacheInterface $cache = null)
     {
         $this->redcapProject = $redcapProject;
         $this->cache = $cache;

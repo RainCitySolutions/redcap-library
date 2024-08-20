@@ -1,20 +1,18 @@
 <?php
 namespace RainCity\REDCap;
 
-use IU\PHPCap\RedCapProject;
 use RainCity\DataCache;
 use RainCity\MethodLogger;
 use RainCity\ScopeTimer;
 use RainCity\Logging\Logger;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 
 class InstrumentMgr
 {
     private LoggerInterface $logger;
-
     private RedCapProject $redcapProject;
-
-    private DataCache $cache;
+    private CacheInterface $cache;
 
     /** @var Instrument[] Associative array where the key is the form name */
     private array $instruments = array();
