@@ -56,9 +56,15 @@ class Manager
      */
     public function getInstruments(): array
     {
+        $instruments = [];
+
         $project = $this->getProject();
 
-        return $project->getInstruments();
+        if (!is_null($project)) {
+            $instruments = $project->getInstruments();
+        }
+
+        return $instruments;
     }
 
     /**
