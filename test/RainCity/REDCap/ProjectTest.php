@@ -196,12 +196,12 @@ class ProjectTest extends REDCapTestCase
 
         $this->assertMatchesRegularExpression(self::ARRAY_SIZE_REGEX, $serializedObj); // should be an array of 8 elements
 
-        $this->assertStringContainsString($data['project_id'], $serializedObj);
+        $this->assertStringContainsString(strval($data['project_id']), $serializedObj);
         $this->assertStringContainsString($data['project_title'], $serializedObj);
         $this->assertStringContainsString($data['creation_time'], $serializedObj);
-        $this->assertStringContainsString($data['surveys_enabled'], $serializedObj);
-        $this->assertStringContainsString($data['is_longitudinal'], $serializedObj);
-        $this->assertStringContainsString($data['record_autonumbering_enabled'], $serializedObj);
+        $this->assertStringContainsString(strval($data['surveys_enabled']), $serializedObj);
+        $this->assertStringContainsString(strval($data['is_longitudinal']), $serializedObj);
+        $this->assertStringContainsString(strval($data['record_autonumbering_enabled']), $serializedObj);
 
         $this->assertStringContainsString(self::TEST_INSTRUMENT_NAME, $serializedObj);
         $this->assertStringContainsString(self::TEST_EVENT_NAME, $serializedObj);

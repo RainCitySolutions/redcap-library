@@ -30,9 +30,9 @@ class InstrumentRecord extends Record
      *
      * @param RedCapProject $proj The a REDCapProject instance to use in communicating with REDCap.
      * @param Instrument $instrument An initialized instance of Instrument.
-     * @param string $recordId The id of an existing REDCap record to load for this instrument.
+     * @param string|int $recordId The id of an existing REDCap record to load for this instrument.
      */
-    public function __construct(RedCapProject $proj, Instrument $instrument, string $recordId = null)
+    public function __construct(RedCapProject $proj, Instrument $instrument, string|int $recordId = null)
     {
         $this->instrument = $instrument;
 

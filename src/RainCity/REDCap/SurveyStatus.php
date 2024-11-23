@@ -42,7 +42,7 @@ class SurveyStatus
             $redcapStatus = $instRcd->getFieldValue($instrument->getName().'_complete', $event) ?? 0;
             $redcapTimestamp = $instRcd->getFieldValue($instrument->getName().'_timestamp', $event) ?? '';
 
-            $this->setRedcapStatus($redcapStatus, $redcapTimestamp);
+            $this->setRedcapStatus(intval($redcapStatus), $redcapTimestamp);
 
             // If REDCap says the survey is incomplete it means it was never started
             if ($this->isRedcapIncomplete() && !$this->isRedcapSurveyIncomplete()) {

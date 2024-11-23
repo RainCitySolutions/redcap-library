@@ -2,7 +2,6 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use Psr\SimpleCache\CacheInterface;
 use RainCity\DataCache;
 use RainCity\Singleton;
 
@@ -23,7 +22,7 @@ class InstrumentFieldEventMapper
         if (!empty($args)) {
             $proj = $args[0];
 
-            /** @var CacheInterface */
+            /** @var DataCache */
             $dataCache = DataCache::instance();
 
             $cacheInst = $dataCache->get(self::INSTRUMENT_FIELD_EVENT_MAP);

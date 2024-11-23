@@ -139,6 +139,7 @@ class Manager
 
         $fieldnames = $this->redcapProject->exportFieldNames();
         $metadata = $this->redcapProject->exportMetadata();
+        /** @var array<array<string, string>> */
         $eventmappings = $this->redcapProject->exportInstrumentEventMappings();
 
         $instruments = $this->redcapProject->exportInstruments();

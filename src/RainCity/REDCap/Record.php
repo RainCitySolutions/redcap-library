@@ -74,7 +74,7 @@ class Record
      * @param RedCapProject $proj A RedCapProject object to use with this record.
      * @param string[] $fields A list of field names to be retrieved/stored for the record.
      *      If specified as an empty array, all of the fields will be used.
-     * @param string|null $recordId The ID of a record to load. (optional)
+     * @param string|int|null $recordId The ID of a record to load. (optional)
      * @param string[] $instruments An array of instrument names used in retrieving the record.
      * @param string[] $events An array of event names to use in retrieving/storing the record.
      *
@@ -83,7 +83,7 @@ class Record
     public function __construct(
         RedCapProject $proj,
         array $fields = array(),
-        string $recordId = null,
+        string|int $recordId = null,
         array $instruments = array(),
         array $events = array()
         )
@@ -112,10 +112,9 @@ class Record
         }
 
         $exportEvents = $proj->exportEvents();
-        if (is_array($exportEvents)) {
-            foreach ($exportEvents as $event) {
-                $this->validEvents[] = $event['unique_event_name'];
-            }
+
+        foreach ($exportEvents as $event) {
+            $this->validEvents[] = $event['unique_event_name'];
         }
 
         $this->setFields($fields);
@@ -130,16 +129,16 @@ class Record
     /**
      * Load a specific record from REDCap into the object.
      *
-     * @param string $recordId A record ID within REDCap.
+     * @param string|int $recordId A record ID within REDCap.
      *
      * @return bool Returns true if the record was found in REDCap, otherwise
      *      returns false.
      */
-    public function loadRecordById (string $recordId): bool
+    public function loadRecordById (string|int $recordId): bool
     {
         $result = false;
 
-        $this->recordId = $recordId;
+        $this->recordId = strval($recordId);
         $this->fieldArray = array();
 
         /** @var string[] */
@@ -405,10 +404,10 @@ class Record
                         }
                     }
                     else {
-                        $this->recordId = $value;
+                        $this->recordId = strval($value);
                     }
                 }
-                else if ($field === self::REDCAP_EVENT_NAME) {
+                elseif ($field === self::REDCAP_EVENT_NAME) {
                     // Ignore the event name field
                 }
                 else {
