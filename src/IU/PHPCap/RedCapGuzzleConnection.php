@@ -134,10 +134,21 @@ class RedCapGuzzleConnection implements RedCapApiConnectionInterface
         $responseStr = '';
 
         try {
-            $response = $this->client->post(
-                is_string($data) ? $data : '',
-                is_array($data) ? $data : []
-                );
+            $requestBody = [];
+            if (is_string($data)) {
+                $requestBody[RequestOptions::HEADERS] = [
+                    'Content-Type' => 'application/x-www-form-urlencoded',
+                    'Accept' => 'application/json'
+                ];
+                $requestBody[RequestOptions::BODY] = $data;
+            } else {
+                $requestBody[RequestOptions::HEADERS] = [
+                    'Accept' => 'application/json'
+                ];
+                $requestBody[RequestOptions::FORM_PARAMS] = $data;
+            }
+
+            $response = $this->client->post('', $requestBody);
 
             // Check for HTTP errors
             $httpCode = $response->getStatusCode();
@@ -363,7 +374,7 @@ class RedCapGuzzleConnection implements RedCapApiConnectionInterface
         $optionValue = null;
 
         if (array_key_exists($option, $this->clientOptions)) {
-            $optionValue = $this->clientOptions;
+            $optionValue = $this->clientOptions[$option];
         }
 
         return $optionValue;
