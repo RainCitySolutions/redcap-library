@@ -43,7 +43,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             $connection
             );
 
-        $this->cache = DataCache::instance(300);
+        $this->cache = DataCache::instance(600);
         $this->cacheKey = parse_url($this->getConnection()->getUrl(), PHP_URL_HOST) . '-' . $apiToken;
     }
 
