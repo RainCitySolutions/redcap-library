@@ -29,7 +29,7 @@ final class RedCapProjectTest extends TestCase
         $this->connection = $this->createMock(RedCapApiConnectionInterface::class);
         $this->connection->method('getUrl')->willReturn(self::TEST_URL);
 
-        $this->proj = new RedCapProject(self::TEST_URL, self::TEST_TOKEN, true, true, null, $this->connection);
+        $this->proj = new RedCapProject(self::TEST_URL, self::TEST_TOKEN, true, null, null, $this->connection);
 
         // Ensure the cache is empty before running each of our tests
         $this->proj->clearCache();

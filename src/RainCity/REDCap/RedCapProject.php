@@ -3,9 +3,11 @@ declare(strict_types = 1);
 namespace RainCity\REDCap;
 
 use IU\PHPCap\PhpCapException;
+use IU\PHPCap\RedCapApiConnectionInterface;
 use RainCity\DataCache;
 use RainCity\Logging\Logger;
 use Psr\SimpleCache\CacheInterface;
+use IU\PHPCap\ErrorHandlerInterface;
 
 
 /**
@@ -25,13 +27,27 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
     private CacheInterface $cache;
     private string $cacheKey;
 
+    /**
+     * Construct and instance
+     *
+     * @param string $apiUrl The URL for a REDCap server API
+     * @param string $apiToken The API authentication token
+     * @param bool $sslVerify Indicator if SSL should be verified or not.
+     *      Defaults to true.
+     * @param string $caCertificateFile A CA certificate file to use in
+     *      connecting to the server. Defaults to null.
+     * @param ErrorHandlerInterface $errorHandler An ErrorHandler to use instead of
+     *      the default. Defaults to null.
+     * @param RedCapApiConnectionInterface $connection A connection to use in
+     *      place of the default. Defaults to null.
+     */
     public function __construct(
-        $apiUrl,
-        $apiToken,
-        $sslVerify = true,
-        $caCertificateFile = null,
-        $errorHandler = null,
-        $connection = null
+        string $apiUrl,
+        string $apiToken,
+        bool $sslVerify = true,
+        ?string $caCertificateFile = null,
+        ?ErrorHandlerInterface $errorHandler = null,
+        ?RedCapApiConnectionInterface $connection = null
         )
     {
         parent::__construct(
