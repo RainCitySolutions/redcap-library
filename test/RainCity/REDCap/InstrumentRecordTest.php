@@ -597,7 +597,7 @@ class InstrumentRecordTest extends REDCapTestCase
     }
 
     public function testGetREDCapArray_withClassicProject() {
-        $this->setCallback('exportEvents', function() { return null; } );
+        $this->setCallback('exportEvents', function() { return []; } );
 
         $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
         $nextInst = $this->createInstrument(static::CONSENT_FORM);

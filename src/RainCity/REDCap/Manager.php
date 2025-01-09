@@ -2,42 +2,23 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use IU\PHPCap\RedCapProject;
 use RainCity\MethodLogger;
 use Psr\SimpleCache\CacheInterface;
 
-
 class Manager
 {
-    private RedCapProject $redcapProject;
+    private RedCapProjectFactoryIntf $redcapProjFactory;
     private ?CacheInterface $cache;
 
-    private string $cacheKey;
-
-    public function __construct(RedCapProject $redcapProject, ?CacheInterface $cache = null)
+    public function __construct(RedCapProjectFactoryIntf $redcapProjectFactory, ?CacheInterface $cache = null)
     {
-        $this->redcapProject = $redcapProject;
+        $this->redcapProjFactory = $redcapProjectFactory;
         $this->cache = $cache;
-
-        $this->cacheKey =
-            parse_url($redcapProject->getConnection()->getUrl(), PHP_URL_HOST) .
-            '-' .
-            $redcapProject->getApiToken();
-/*
-        }
-        else {
-        TODO: do this when handling a REDCap exception?
-            $msg = 'Unable to communication with REDCap, incorrectly configured RedCapProject object?';
-            $this->logger->warning($msg);
-
-            throw new \Exception ($msg);
-        }
-*/
     }
 
     public function getProject(): ?Project
     {
-        $projectCacheKey = 'RedcapProject-'.$this->cacheKey;
+        $projectCacheKey = 'RedcapProject-'.$this->redcapProjFactory->getProject()->getHash();
 
         $project = isset($this->cache) ? $this->cache->get($projectCacheKey) : null;
         if (!isset($project)) {
@@ -100,7 +81,7 @@ class Manager
         ?array $events = array()
         ): ?Record
     {
-        $record = new Record($this->redcapProject, $fields, null, $instruments, $events);
+        $record = new Record($this->redcapProjFactory->getProject(), $fields, null, $instruments, $events);
 
         if (!$record->loadRecordById($recordId)) {
             $record = null;
@@ -114,7 +95,7 @@ class Manager
     {
         $project = null;
 
-        $projInfo = $this->redcapProject->exportProjectInfo();
+        $projInfo = $this->redcapProjFactory->getProject()->exportProjectInfo();
 
         if (count($projInfo) != 0) {
             $project = new Project($projInfo);
@@ -137,12 +118,14 @@ class Manager
     {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
-        $fieldnames = $this->redcapProject->exportFieldNames();
-        $metadata = $this->redcapProject->exportMetadata();
-        /** @var array<array<string, string>> */
-        $eventmappings = $this->redcapProject->exportInstrumentEventMappings();
+        $redcapProject = $this->redcapProjFactory->getProject();
 
-        $instruments = $this->redcapProject->exportInstruments();
+        $fieldnames = $redcapProject->exportFieldNames();
+        $metadata = $redcapProject->exportMetadata();
+        /** @var array<array<string, string>> */
+        $eventmappings = $redcapProject->exportInstrumentEventMappings();
+
+        $instruments = $redcapProject->exportInstruments();
         foreach ($instruments as $name => $label) {
             $project->addInstrument(new Instrument($name, $label, $fieldnames, $metadata, $eventmappings));
         }
@@ -159,7 +142,7 @@ class Manager
     {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
-        $events = $this->redcapProject->exportEvents();
+        $events = $this->redcapProjFactory->getProject()->exportEvents();
         foreach ($events as $event) {
             $project->addEvent(new Event ($event));
         }

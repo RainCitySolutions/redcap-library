@@ -3,7 +3,7 @@ declare(strict_types = 1);
 namespace RainCity\REDCap;
 
 use IU\PHPCap\RedCapApiConnectionInterface;
-use IU\PHPCap\RedCapProject;
+//use IU\PHPCap\RedCapProject;
 use RainCity\TestHelper\RainCityTestCase;
 
 
@@ -617,6 +617,9 @@ abstract class REDCapTestCase
     /** @var RedCapProject */
     protected $stubRedcapProj;
 
+    /** @var RedCapProjectFactoryIntf */
+    protected $stubProjectFactory;
+
     protected static function getCurrentRcdId(): string {
         return 'ID_X_'. self::$nextRcdId;
     }
@@ -631,11 +634,17 @@ abstract class REDCapTestCase
     {
         parent::setUp();
 
-        $this->setupStubProject();
+        $stubProject = $this->setupStubProject();
+
+        $stubFactory = $this->createMock(RedCapProjectFactoryIntf::class);
+        $stubFactory->method('getProject')->willReturn($stubProject);
+
+        $this->stubProjectFactory = $stubFactory;
     }
 
     protected function tearDown(): void {
         $this->stubRedcapProj = null;
+        $this->stubProjectFactory = null;
 
         parent::tearDown();
     }
@@ -660,7 +669,7 @@ abstract class REDCapTestCase
      *
      * Initialize default responses.
      */
-    private function setupStubProject() {
+    private function setupStubProject(): RedCapProject {
         // create a mock REDCapProject instance
         $this->stubRedcapProj = $this->createMock(RedCapProject::class);
 
@@ -736,10 +745,12 @@ abstract class REDCapTestCase
         $mockConnection->method('getUrl')->willReturn('https://redcap.test.co/redcap/api');
 
         $this->stubRedcapProj->method('getConnection')->willReturn($mockConnection);
+
+        return $this->stubRedcapProj;
     }
 
     protected function useClassicProject() {
-        $this->setCallback('exportEvents', function() { return null; } );
+        $this->setCallback('exportEvents', function() { return []; } );
     }
 
     /**
