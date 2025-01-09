@@ -60,7 +60,20 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             );
 
         $this->cache = DataCache::instance(600);
-        $this->cacheKey = parse_url($this->getConnection()->getUrl(), PHP_URL_HOST) . '-' . $apiToken;
+        $this->cacheKey = hash('sha256', parse_url($this->getConnection()->getUrl(), PHP_URL_HOST) . '-' . $apiToken);
+    }
+
+    /**
+     * Fetch the hash value representing this project instance.
+     *
+     * Note that different RedCapProject instances using the same host and
+     * API Token will return the same hash value.
+     *
+     * @return string The hash value for the project object.
+     */
+    public function getHash(): string
+    {
+        return $this->cacheKey;
     }
 
     /**
