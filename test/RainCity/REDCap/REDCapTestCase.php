@@ -676,6 +676,7 @@ abstract class REDCapTestCase
         // setup default return values
         $this->setCallback('exportRedcapVersion',       function() { return '9.5.23'; });
         $this->setCallback('getRecordIdFieldName',      function() { return self::RCD_ID_FIELD; });
+        $this->setCallback('exportProjectInfo',         function() { return ['is_longitudinal' => 1]; } );
         $this->setCallback('generateNextRecordName',    function() { return self::getNextRcdId(); } );
         $this->setCallback('exportProjectInfo',         function() { return self::TEST_PROJECT; } );
         $this->setCallback('exportEvents',              function() { return self::TEST_EVENTS; } );
@@ -751,6 +752,7 @@ abstract class REDCapTestCase
 
     protected function useClassicProject() {
         $this->setCallback('exportEvents', function() { return []; } );
+        $this->setCallback('exportProjectInfo', function() { return ['is_longitudinal' => 0]; } );
     }
 
     /**

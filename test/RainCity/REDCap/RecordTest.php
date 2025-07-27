@@ -10,6 +10,8 @@ use RainCity\TestHelper\ReflectionHelper;
 class RecordTest extends REDCapTestCase
 {
     private const SHOULD_BE_NO_FIELD_DATA = 'There should not be any field data';
+    private const FIELD_NAME_LIST_SHOULD_BE_EMPTY = 'Field name list should be empty';
+
     //***********************************************************************
     //***********************************************************************
     //* Constructor tests
@@ -47,7 +49,7 @@ class RecordTest extends REDCapTestCase
         $dirtyFlags = ReflectionHelper::getObjectProperty(Record::class, 'dirtyFieldArray', $obj);
 
         $this->assertEquals($this->stubRedcapProj, $proj);
-        $this->assertEmpty($fieldNames, 'Field name list should be empty');
+        $this->assertEmpty($fieldNames, self::FIELD_NAME_LIST_SHOULD_BE_EMPTY);
         $this->assertEmpty($fieldArray, 'Field list should be empty');
         $this->assertEmpty($dirtyFlags, 'Dirty flags list should be empty');
 
@@ -1222,7 +1224,7 @@ class RecordTest extends REDCapTestCase
 
         $fieldNames = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
 
-        $this->assertEmpty($fieldNames, 'Field name list should be empty');
+        $this->assertEmpty($fieldNames, self::FIELD_NAME_LIST_SHOULD_BE_EMPTY);
     }
 
 
@@ -1238,7 +1240,7 @@ class RecordTest extends REDCapTestCase
 
         $fieldNames = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
 
-        $this->assertEmpty($fieldNames, 'Field name list should be empty');
+        $this->assertEmpty($fieldNames, self::FIELD_NAME_LIST_SHOULD_BE_EMPTY);
     }
 
 
@@ -1337,7 +1339,7 @@ class RecordTest extends REDCapTestCase
 
         $fieldNames = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
 
-        $this->assertEmpty($fieldNames, 'Field name list should be empty');
+        $this->assertEmpty($fieldNames, self::FIELD_NAME_LIST_SHOULD_BE_EMPTY);
     }
 
 

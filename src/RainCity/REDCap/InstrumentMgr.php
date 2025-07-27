@@ -13,7 +13,7 @@ class InstrumentMgr
 {
     private LoggerInterface $logger;
     private RedCapProject $redcapProject;
-    private CacheInterface $cache;
+    private ?CacheInterface $cache;
 
     /** @var Instrument[] Associative array where the key is the form name */
     private array $instruments = array();

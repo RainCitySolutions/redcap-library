@@ -17,7 +17,7 @@ class RedCapGuzzleConnection implements RedCapApiConnectionInterface
 
     /** @var array<string, mixed> */
     private array $clientOptions;
-    private Client $client;
+    private ?Client $client;
 
     /** the error handler for the connection. */
     protected ErrorHandlerInterface $errorHandler;
@@ -322,7 +322,7 @@ class RedCapGuzzleConnection implements RedCapApiConnectionInterface
 
     /**
      * @param int $connectionTimeoutInSeconds
-     * @return void
+     * @return integer connection timeout in seconds.
      *
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapApiConnectionInterface::setConnectionTimeoutInSeconds()
@@ -330,6 +330,8 @@ class RedCapGuzzleConnection implements RedCapApiConnectionInterface
     public function setConnectionTimeoutInSeconds($connectionTimeoutInSeconds)
     {
         $this->setOption(RequestOptions::CONNECT_TIMEOUT, $connectionTimeoutInSeconds);
+
+        return $connectionTimeoutInSeconds;
     }
 
     /**

@@ -25,6 +25,9 @@ class Record
     /** @var RedCapProject  A RedCapProject project for interfacing with REDCap*/
     protected RedCapProject $redcapProj;
 
+    /** @var bool Is the project longitudinal */
+    private bool $isLongitudinal = false;
+
     /** @var string[] List of valid fields within REDCap */
     private array $validFields = array();
 
@@ -92,6 +95,9 @@ class Record
 
         $this->redcapProj = $proj;
         $this->recordIdField = $proj->getRecordIdFieldName();
+
+        $projInfo = $proj->exportProjectInfo();
+        $this->isLongitudinal = boolval($projInfo['is_longitudinal']);
 
         $exportFieldNames = $proj->exportFieldNames();
         if (is_array($exportFieldNames)) {
@@ -520,7 +526,7 @@ class Record
     {
         foreach ($oldFields as $field) {
             $ndx = array_search($field, $this->redcapFields);
-            if ($ndx !== FALSE) {
+            if ($ndx !== false) {
                 unset($this->redcapFields[$ndx]);
             }
         }
@@ -879,7 +885,7 @@ class Record
      */
     protected function projectUsesEvents(): bool
     {
-        return !empty($this->validEvents);
+        return $this->isLongitudinal && !empty($this->validEvents);
     }
 
 
