@@ -883,7 +883,7 @@ class Record
      *
      * @return bool Returns true if the project uses events, otherwise returns false.
      */
-    protected function projectUsesEvents(): bool
+    public function projectUsesEvents(): bool
     {
         return $this->isLongitudinal && !empty($this->validEvents);
     }
