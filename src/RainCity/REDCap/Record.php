@@ -97,7 +97,7 @@ class Record
         $this->recordIdField = $proj->getRecordIdFieldName();
 
         $projInfo = $proj->exportProjectInfo();
-        $this->isLongitudinal = boolval($projInfo['is_longitudinal']);
+        $this->isLongitudinal = boolval($projInfo['is_longitudinal'] ?? false);
 
         $exportFieldNames = $proj->exportFieldNames();
         if (is_array($exportFieldNames)) {
