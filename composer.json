@@ -15,17 +15,22 @@
 		"php" : ">=8.2",
 		"composer/installers" : "~2.3",
 		"iu-redcap/phpcap" : "~1.5",
-		"raincity/php-library" : "~2.0"
+		"raincity/php-library" : "~2.1"
 	},
 	"autoload" : {
 		"classmap" : [
 			"src/"
 		],
 		"psr-4" : {
-			"" : [
-				"src",
-				"test"
-			]
+			"RainCity\\REDCap\\" : "src/RainCity/REDCap"
+		}
+	},
+	"autoload-dev" : {
+		"classmap" : [
+			"test/"
+		],
+		"psr-4" : {
+			"RainCity\\REDCap\\" : "test/RainCity/REDCap"
 		}
 	},
 	"require-dev" : {
