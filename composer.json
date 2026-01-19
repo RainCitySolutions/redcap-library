@@ -22,7 +22,8 @@
 			"src/"
 		],
 		"psr-4" : {
-			"RainCity\\REDCap\\" : "src/RainCity/REDCap"
+			"RainCity\\REDCap\\" : "src/RainCity/REDCap",
+			"IU\\PHPCap\\" : "src/IU/PHPCap"
 		}
 	},
 	"autoload-dev" : {
