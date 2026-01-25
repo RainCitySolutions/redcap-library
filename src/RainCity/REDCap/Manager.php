@@ -7,18 +7,17 @@ use Psr\SimpleCache\CacheInterface;
 
 class Manager
 {
-    private RedCapProjectFactoryIntf $redcapProjFactory;
-    private ?CacheInterface $cache;
-
-    public function __construct(RedCapProjectFactoryIntf $redcapProjectFactory, ?CacheInterface $cache = null)
+    public function __construct(
+        private RedCapProjectFactoryIntf $redcapProjFactory,
+        private string $projectId,
+        private ?CacheInterface $cache = null
+        )
     {
-        $this->redcapProjFactory = $redcapProjectFactory;
-        $this->cache = $cache;
     }
 
     public function getProject(): ?Project
     {
-        $projectCacheKey = 'RedcapProject-'.$this->redcapProjFactory->getProject()->getHash();
+        $projectCacheKey = 'RedcapProject-'.$this->redcapProjFactory->getProject($this->projectId)->getHash();
 
         $project = isset($this->cache) ? $this->cache->get($projectCacheKey) : null;
         if (!isset($project)) {
@@ -81,7 +80,7 @@ class Manager
         ?array $events = array()
         ): ?Record
     {
-        $record = new Record($this->redcapProjFactory->getProject(), $fields, null, $instruments, $events);
+        $record = new Record($this->redcapProjFactory->getProject($this->projectId), $fields, null, $instruments, $events);
 
         if (!$record->loadRecordById($recordId)) {
             $record = null;
@@ -95,7 +94,7 @@ class Manager
     {
         $project = null;
 
-        $projInfo = $this->redcapProjFactory->getProject()->exportProjectInfo();
+        $projInfo = $this->redcapProjFactory->getProject($this->projectId)->exportProjectInfo();
 
         if (count($projInfo) != 0) {
             $project = new Project($projInfo);
@@ -118,7 +117,7 @@ class Manager
     {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
-        $redcapProject = $this->redcapProjFactory->getProject();
+        $redcapProject = $this->redcapProjFactory->getProject($this->projectId);
 
         $fieldnames = $redcapProject->exportFieldNames();
         $metadata = $redcapProject->exportMetadata();
@@ -142,7 +141,8 @@ class Manager
     {
         $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
 
-        $events = $this->redcapProjFactory->getProject()->exportEvents();
+        $events = $this->redcapProjFactory->getProject($this->projectId)->exportEvents();
+
         foreach ($events as $event) {
             $project->addEvent(new Event ($event));
         }

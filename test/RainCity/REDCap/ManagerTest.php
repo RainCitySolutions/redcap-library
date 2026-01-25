@@ -32,8 +32,10 @@ use RainCity\TestHelper\ReflectionHelper;
 #[CoversMethod('RainCity\REDCap\Instrument', 'readMetadata')]
 class ManagerTest extends REDCapTestCase
 {
+    private const PROJECT_ID = 'rpf_1234567890';
+
     public function testCtor_normal() {
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
 
         $redcapFactory = ReflectionHelper::getObjectProperty(Manager::class, 'redcapProjFactory', $mgr);
 
@@ -44,7 +46,7 @@ class ManagerTest extends REDCapTestCase
     public function testCtor_withCache() {
         $mockCache = $this->createMock(DataCache::class);
 
-        $mgr = new Manager($this->stubProjectFactory, $mockCache);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
         $cache = ReflectionHelper::getObjectProperty(Manager::class, 'cache', $mgr);
 
         $this->assertEquals($mockCache, $cache);
@@ -54,7 +56,7 @@ class ManagerTest extends REDCapTestCase
         $this->setCallback('exportProjectInfo', function() { return array(); } );
         $this->setCallback('exportInstrumentEventMappings', function() {return null;});
 
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
         $project = $mgr->getProject();
 
         $this->assertNull($project);
@@ -67,7 +69,7 @@ class ManagerTest extends REDCapTestCase
         $mockCache->expects($this->once())->method('get')->willReturn($testProject);
         $mockCache->expects($this->never())->method('set');
 
-        $mgr = new Manager($this->stubProjectFactory, $mockCache);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
         $mgr->getProject();
     }
 
@@ -78,28 +80,28 @@ class ManagerTest extends REDCapTestCase
         $mockCache->expects($this->once())->method('get')->willReturn(null);
         $mockCache->expects($this->once())->method('set');
 
-        $mgr = new Manager($this->stubProjectFactory, $mockCache);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
         $mgr->getProject();
     }
 
     public function testGetProject_withEvents() {
         $this->setCallback('exportInstruments', function () { return array(); } );
 
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
         $project = $mgr->getProject();
 
         $this->assertEquals(3, count($project->getEventNames()) );
     }
 
     public function testGetProject_withInstruments() {
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
         $project = $mgr->getProject();
 
         $this->assertCount(count(static::TEST_INSTRUMENTS), $project->getInstrumentNames() );
     }
 
     public function testGetInstruments() {
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
         $instruments = $mgr->getInstruments();
 
         $this->assertIsArray($instruments);
@@ -107,7 +109,7 @@ class ManagerTest extends REDCapTestCase
     }
 
     public function testGetEvents() {
-        $mgr = new Manager($this->stubProjectFactory);
+        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
         $events = $mgr->getEvents();
 
         $this->assertIsArray($events);

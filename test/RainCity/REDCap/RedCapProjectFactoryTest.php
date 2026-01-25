@@ -1,86 +1,140 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 namespace RainCity\REDCap;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use RainCity\TestHelper\ReflectionHelper;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\UsesClass;
 
-#[CoversClass('\RainCity\REDCap\RedcapProjectFactory')]
+#[CoversClass(RedCapProjectFactory::class)]
+#[UsesClass(RedCapProjectInfo::class)]
 final class RedCapProjectFactoryTest extends TestCase
 {
-    private const TEST_URL = 'http://some.redcap.server.org/api';
-    private const TEST_TOKEN = 'A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4';
+    private TestableRedCapProjectFactory $factory;
 
-    /**
-     * {@inheritDoc}
-     * @see \PHPUnit\Framework\TestCase::setUp()
-     */
     protected function setUp(): void
     {
-        ReflectionHelper::setClassProperty(RedCapProjectFactory::class, 'singletonFactory', null);
+        $this->factory = new TestableRedCapProjectFactory();
     }
 
-    public function testCtor() {
-        $testObj = new RedCapProjectFactory(self::TEST_URL, self::TEST_TOKEN);
-
-        $this->assertNotNull($testObj);
+    private function createFactoryMock(): RedCapProjectFactory
+    {
+        return $this->getMockBuilder(RedCapProjectFactory::class)
+        ->onlyMethods(['createProject'])
+        ->getMock();
     }
 
-    public function testInstance_notInitialized() {
-        $this->expectException('\RainCity\Exception\InvalidStateException');
+    #[Test]
+    public function instance_returns_same_factory(): void
+    {
+        $a = RedCapProjectFactory::instance();
+        $b = RedCapProjectFactory::instance();
 
-        RedCapProjectFactory::instance();
+        self::assertSame($a, $b);
     }
 
-    public function testInitSingleton_alreadyInitialized() {
-        $this->expectException('\RainCity\Exception\InvalidStateException');
+    #[Test]
+    public function same_url_and_token_returns_same_project_id(): void
+    {
+        $id1 = $this->factory->initializeProject(
+            'https://example.com',
+            'TOKEN123'
+            );
 
-        $testObj = new RedCapProjectFactory(self::TEST_URL, self::TEST_TOKEN);
+        $id2 = $this->factory->initializeProject(
+            'https://example.com',
+            'TOKEN123'
+            );
 
-        ReflectionHelper::setClassProperty(RedCapProjectFactory::class, 'singletonFactory', $this->createStub(RedCapProjectFactory::class));
-
-        $testObj->initSingleton();
+        self::assertSame($id1, $id2);
     }
 
-    public function testInitSingleton_instance() {
-        $testObj = new RedCapProjectFactory(self::TEST_URL, self::TEST_TOKEN);
+    #[Test]
+    public function different_url_or_token_returns_different_ids(): void
+    {
+        $id1 = $this->factory->initializeProject(
+            'https://a.com',
+            'TOKEN'
+            );
 
-        $singleton = $testObj->initSingleton();
+        $id2 = $this->factory->initializeProject(
+            'https://b.com',
+            'TOKEN'
+            );
 
-        $this->assertNotNull($singleton);
-        $this->assertInstanceOf(RedCapProjectFactory::class, $singleton);
-
-        $instance = RedCapProjectFactory::instance();
-
-        $this->assertNotNull($instance);
-        $this->assertSame($singleton, $instance);
+        self::assertNotSame($id1, $id2);
     }
 
-    public function testGetProject_existingProject() {
-        $testObj = new RedCapProjectFactory(self::TEST_URL, self::TEST_TOKEN);
+    #[Test]
+    public function get_project_creates_project_lazily(): void
+    {
+        $factory = $this->createFactoryMock();
 
-        $stubProject = $this->createStub(RedCapProject::class);
+        $project = $this->createStub(RedCapProject::class);
 
-        ReflectionHelper::setObjectProperty(RedCapProjectFactory::class, 'project', $stubProject, $testObj);
+        $factory
+            ->expects(self::once())
+            ->method('createProject')
+            ->with(self::isInstanceOf(RedCapProjectInfo::class))
+            ->willReturn($project);
 
-        $project = $testObj->getProject();
+        $id = $factory->initializeProject(
+            'https://example.com',
+            'TOKEN'
+            );
 
-        $this->assertNotNull($project);
-        $this->assertSame($stubProject, $project);
+        $result = $factory->getProject($id);
+
+        self::assertSame($project, $result);
     }
 
-    public function testGetProject_noProject() {
-//        $testObj = new RedCapProjectFactory(self::TEST_URL, self::TEST_TOKEN);
+    #[Test]
+    public function get_project_returns_same_instance_on_subsequent_calls(): void
+    {
+        $factory = $this->createFactoryMock();
 
-        $mockProject = $this->createStub(RedCapProject::class);
+        $project = $this->createStub(RedCapProject::class);
 
-        $mock = $this->createPartialMock(RedCapProjectFactory::class, ['createProject']);
-        $mock->expects($this->once())->method('createProject')->willReturn($mockProject);
+        $factory
+            ->expects(self::once())
+            ->method('createProject')
+            ->willReturn($project);
 
-        $project = $mock->getProject();
+        $id = $factory->initializeProject(
+            'https://example.com',
+            'TOKEN'
+            );
 
-        $this->assertNotNull($project);
-        $this->assertSame($mockProject, $project);
+        $p1 = $factory->getProject($id);
+        $p2 = $factory->getProject($id);
+
+        self::assertSame($p1, $p2);
+    }
+
+    #[Test]
+    public function get_project_returns_null_for_unknown_id(): void
+    {
+        $project = $this->factory->getProject('does-not-exist');
+
+        self::assertNull($project);
+        self::assertSame(0, $this->factory->createCalls);
     }
 }
+
+/**
+ * Testable factory that exposes creation count.
+ */
+final class TestableRedCapProjectFactory extends RedCapProjectFactory
+{
+    public int $createCalls = 0;
+
+    protected function createProject(RedCapProjectInfo $info): RedCapProject
+    {
+        $this->createCalls++;
+
+        // We don't care about real behavior here
+        return $this->createStub(RedCapProject::class);
+    }
+}
+
