@@ -253,7 +253,11 @@ class InstrumentRecord extends Record
             // When the survey is a CAT, fake the required field count.
             // Say there is one required field and base the completed count
             // on whether the form has been completed or not.
-            $fieldCnt = new CompletedFieldCount($this->isComplete(true, $event) ? 1 : 0, 1);
+            // 20261028 - Changed checkNextInstrument to false; subsequent
+            // surveys may not have been started (ala summary surveys) which
+            // would result in this survey thinking it is missing a required
+            // field.
+            $fieldCnt = new CompletedFieldCount($this->isComplete(false, $event) ? 1 : 0, 1);
         }
         else {
             $fieldCnt = $this->initRequiredFieldCounts($event);
