@@ -3,5 +3,6 @@
 /build/
 /report/
 /vendor/
+/node_modules/
 coverage.db
 .phpunit.result.cache

@@ -1,0 +1,20 @@
+{
+  "name": "redcap-library",
+  "version": "2.0.30",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "gulp"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "autoprefixer": "^10.6.2",
+    "gulp": "^5.0.1",
+    "gulp-noop": "^1.0.1",
+    "gulp-rename": "^2.1.0",
+    "gulp-replace": "^1.1.4",
+    "gulp-zip": "^6.1.0",
+    "npm": "^12.2.1"
+  }
+}
