@@ -275,7 +275,7 @@ class Record
                          * is a valid field name and that the record id and event
                          * name is present in each entry.
                          */
-                        array_walk($entry, function ($value, $field, $valid) use ($isValid) {
+                        array_walk($entry, function ($value, $field, $valid) use (&$isValid) {
                             if (is_string($field) && (is_string($value) || is_numeric($value)) ) {
                                 /*
                                  * Check that the field name is valid for the project
