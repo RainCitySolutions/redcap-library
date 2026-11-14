@@ -39,7 +39,7 @@ class ManagerTest extends REDCapTestCase
         parent::setUp();
 
         $this->mockDefProj = $this->createMock(DeferredRedCapProject::class);
-        $this->mockDefProj->method('getRedCapProject')->willReturn($this->mockRedcapProj);
+        $this->mockDefProj->method('getProject')->willReturn($this->mockRedcapProj);
     }
 
     public function testCtor() {

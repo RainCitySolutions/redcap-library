@@ -41,7 +41,7 @@ class DeferredRedCapProject
      * 
      * @return RedCapProject A RedCapProject instance
      */
-    public function getRedCapProject(): RedCapProject
+    public function getProject(): RedCapProject
     {
         if (!isset($this->project)) {
             $this->project = new RedCapProject(
