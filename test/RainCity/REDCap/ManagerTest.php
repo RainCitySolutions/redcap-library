@@ -32,7 +32,7 @@ use RCS\Util\ReflectionHelper;
 #[CoversMethod('RainCity\REDCap\Instrument', 'readMetadata')]
 class ManagerTest extends REDCapTestCase
 {
-    private DeferredRedCapProject|MockObject $mockDefProj;
+    private DeferredRedCapProject&MockObject $mockDefProj;
 
     protected function setUp(): void
     {

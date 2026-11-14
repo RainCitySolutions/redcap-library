@@ -615,8 +615,8 @@ abstract class REDCapTestCase
 
     protected static $nextRcdId = 1;
 
-    protected RedCapProject|MockObject $mockRedcapProj;
-    protected CacheInterface|MockObject $mockCache;
+    protected RedCapProject&MockObject $mockRedcapProj;
+    protected CacheInterface&MockObject $mockCache;
     protected LoggerInterface $stubLogger;
 
     protected static function getCurrentRcdId(): string {
@@ -666,7 +666,7 @@ abstract class REDCapTestCase
      *
      * Initialize default responses.
      */
-    private function setupMockProject(): RedCapProject|MockObject {
+    private function setupMockProject(): RedCapProject&MockObject {
         // create a mock REDCapProject instance
         $this->mockRedcapProj = $this->createMock(RedCapProject::class);
 

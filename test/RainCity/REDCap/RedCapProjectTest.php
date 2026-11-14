@@ -23,8 +23,8 @@ final class RedCapProjectTest extends REDCapTestCase
     private RedCapProject $proj;
     private LockFactory $lockFactory;
 
-    private RedCapConfigIntf|MockObject $mockConfig;
-    private RedCapApiConnectionInterface|MockObject $mockConn;
+    private RedCapConfigIntf&MockObject $mockConfig;
+    private RedCapApiConnectionInterface&MockObject $mockConn;
 
 
     protected function setUp(): void
