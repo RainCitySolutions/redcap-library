@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use RainCity\SerializeAsArrayTrait;
+use RCS\Traits\SerializeAsArrayTrait;
 
 class Field implements \Serializable
 {

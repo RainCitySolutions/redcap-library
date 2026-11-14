@@ -2,11 +2,11 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
+use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
-use RainCity\DataCache;
-use RainCity\TestHelper\ReflectionHelper;
-
+use PHPUnit\Framework\MockObject\MockObject;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\Manager')]
 #[CoversMethod('RainCity\REDCap\Project', '__construct')]
@@ -32,31 +32,38 @@ use RainCity\TestHelper\ReflectionHelper;
 #[CoversMethod('RainCity\REDCap\Instrument', 'readMetadata')]
 class ManagerTest extends REDCapTestCase
 {
-    private const PROJECT_ID = 'rpf_1234567890';
+    private DeferredRedCapProject|MockObject $mockDefProj;
 
-    public function testCtor_normal() {
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-        $redcapFactory = ReflectionHelper::getObjectProperty(Manager::class, 'redcapProjFactory', $mgr);
-
-        $this->assertEquals($this->stubProjectFactory, $redcapFactory);
-        $this->assertNull(ReflectionHelper::getObjectProperty(Manager::class, 'cache', $mgr));
+        $this->mockDefProj = $this->createMock(DeferredRedCapProject::class);
+        $this->mockDefProj->method('getRedCapProject')->willReturn($this->mockRedcapProj);
     }
 
-    public function testCtor_withCache() {
-        $mockCache = $this->createMock(DataCache::class);
+    public function testCtor() {
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
 
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
-        $cache = ReflectionHelper::getObjectProperty(Manager::class, 'cache', $mgr);
-
-        $this->assertEquals($mockCache, $cache);
+        $this->assertSame(
+            $this->mockDefProj,
+            ReflectionHelper::getObjectProperty(Manager::class, 'defRedCapProject', $mgr)
+            );
+        $this->assertSame(
+            $this->mockCache,
+            ReflectionHelper::getObjectProperty(Manager::class, 'cache', $mgr)
+            );
+        $this->assertSame(
+            $this->stubLogger,
+            ReflectionHelper::getObjectProperty(Manager::class, 'logger', $mgr)
+            );
     }
 
     public function testGetProject_noProject() {
-        $this->setCallback('exportProjectInfo', function() { return array(); } );
-        $this->setCallback('exportInstrumentEventMappings', function() {return null;});
+        $this->setCallback('exportProjectInfo', fn() => [] );
+        $this->setCallback('exportInstrumentEventMappings', fn() => null );
 
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
         $project = $mgr->getProject();
 
         $this->assertNull($project);
@@ -65,43 +72,46 @@ class ManagerTest extends REDCapTestCase
     public function testGetProject_cacheHit() {
         $testProject = new Project(ProjectTest::getTestProject());
 
-        $mockCache = $this->createMock(DataCache::class);
-        $mockCache->expects($this->once())->method('get')->willReturn($testProject);
-        $mockCache->expects($this->never())->method('set');
+        $this->mockCache->expects($this->once())->method('get')->willReturn($testProject);
+        $this->mockCache->expects($this->never())->method('set');
 
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
-        $mgr->getProject();
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
+        $project = $mgr->getProject();
+
+        $this->assertSame($testProject,$project);
     }
 
     public function testGetProject_cacheMiss() {
-        $this->setCallback('exportInstruments', function () { return array(); } );
+        $this->setCallback('exportProjectInfo', fn() => ProjectTest::getTestProject() );
+        $this->setCallback('exportInstruments', fn() => [] );
 
-        $mockCache = $this->createMock(DataCache::class);
-        $mockCache->expects($this->once())->method('get')->willReturn(null);
-        $mockCache->expects($this->once())->method('set');
+        $this->mockCache->expects($this->once())->method('get')->willReturn(null);
+        $this->mockCache->expects($this->once())->method('set');
 
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID, $mockCache);
-        $mgr->getProject();
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
+        $project = $mgr->getProject();
+
+        $this->assertNotNull($project);
     }
 
     public function testGetProject_withEvents() {
-        $this->setCallback('exportInstruments', function () { return array(); } );
+        $this->setCallback('exportInstruments', fn() => [] );
 
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
         $project = $mgr->getProject();
 
         $this->assertEquals(3, count($project->getEventNames()) );
     }
 
     public function testGetProject_withInstruments() {
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
         $project = $mgr->getProject();
 
         $this->assertCount(count(static::TEST_INSTRUMENTS), $project->getInstrumentNames() );
     }
 
     public function testGetInstruments() {
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
         $instruments = $mgr->getInstruments();
 
         $this->assertIsArray($instruments);
@@ -109,7 +119,7 @@ class ManagerTest extends REDCapTestCase
     }
 
     public function testGetEvents() {
-        $mgr = new Manager($this->stubProjectFactory, self::PROJECT_ID);
+        $mgr = new Manager($this->mockDefProj, $this->mockCache, $this->stubLogger);
         $events = $mgr->getEvents();
 
         $this->assertIsArray($events);

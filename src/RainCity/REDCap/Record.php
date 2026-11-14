@@ -4,8 +4,6 @@ namespace RainCity\REDCap;
 
 use IU\PHPCap\RedCapProject;
 use Psr\Log\LoggerInterface;
-use RainCity\Logging\Logger;
-
 
 /**
  * Represents a record in the REDCap system for a single participant.
@@ -18,12 +16,6 @@ class Record
     const REDCAP_EVENT_NAME = 'redcap_event_name';  // name of the record array field to indicate the event for a record
     const REDCAP_SURVEY_IDENTIFIER = 'redcap_survey_identifier';
     const REDCAP_TIMESTAMP_FORMAT = 'Y-m-d H:i:s';
-
-    /** @var LoggerInterface */
-    protected LoggerInterface $logger;
-
-    /** @var RedCapProject  A RedCapProject project for interfacing with REDCap*/
-    protected RedCapProject $redcapProj;
 
     /** @var bool Is the project longitudinal */
     private bool $isLongitudinal = false;
@@ -74,7 +66,8 @@ class Record
      *
      * If a record id is provided the record will be loaded from REDCap.
      *
-     * @param RedCapProject $proj A RedCapProject object to use with this record.
+     * @param RedCapProject $project A RedCapProject object to use with this record.
+     * @param LoggerInterface $logger The logger to use
      * @param string[] $fields A list of field names to be retrieved/stored for the record.
      *      If specified as an empty array, all of the fields will be used.
      * @param string|int|null $recordId The ID of a record to load. (optional)
@@ -84,22 +77,20 @@ class Record
      * @throws \TypeError Thrown if an entry in the fields array is not a string.
      */
     public function __construct(
-        RedCapProject $proj,
+        protected readonly RedCapProject $project,
+        protected readonly LoggerInterface $logger,
         array $fields = array(),
-        string|int $recordId = null,
+        string|int|null $recordId = null,
         array $instruments = array(),
         array $events = array()
         )
     {
-        $this->logger = Logger::getLogger(get_class($this));
+        $this->recordIdField = $project->getRecordIdFieldName();
 
-        $this->redcapProj = $proj;
-        $this->recordIdField = $proj->getRecordIdFieldName();
-
-        $projInfo = $proj->exportProjectInfo();
+        $projInfo = $project->exportProjectInfo();
         $this->isLongitudinal = boolval($projInfo['is_longitudinal'] ?? false);
 
-        $exportFieldNames = $proj->exportFieldNames();
+        $exportFieldNames = $project->exportFieldNames();
         if (is_array($exportFieldNames)) {
             foreach($exportFieldNames as $entry) {
                 $this->validFields[] = $entry['export_field_name'];
@@ -109,7 +100,7 @@ class Record
         $this->validFields[] = self::REDCAP_EVENT_NAME;
 
         // Add the timestamp field for each instrument, which isn't returned by exportFieldNames
-        $exportInstruments = $proj->exportInstruments();
+        $exportInstruments = $project->exportInstruments();
         if (is_array($exportInstruments)) {
             foreach(array_keys($exportInstruments) as $name) {
                 $this->validInstruments[] = $name;
@@ -117,7 +108,7 @@ class Record
             }
         }
 
-        $exportEvents = $proj->exportEvents();
+        $exportEvents = $project->exportEvents();
 
         foreach ($exportEvents as $event) {
             $this->validEvents[] = $event['unique_event_name'];
@@ -159,7 +150,7 @@ class Record
             $fields[] = $this->recordIdField;
         }
 
-        $rcd = $this->redcapProj->exportRecords(
+        $rcd = $this->project->exportRecords(
             'php',
             'flat',
             array($recordId),
@@ -839,7 +830,7 @@ class Record
     {
         // If we don't have a record id, fetch one
         if (!isset($this->recordId)) {
-            $this->recordId = $this->redcapProj->generateNextRecordName();
+            $this->recordId = $this->project->generateNextRecordName();
         }
 
         $fieldRcds = array();
@@ -873,7 +864,7 @@ class Record
             $fieldRcds[] = $fieldRcd;
         }
 
-        $this->redcapProj->importRecords($fieldRcds);
+        $this->project->importRecords($fieldRcds);
 
         $this->dirtyFieldArray = array();	// assume nothing is dirty
     }

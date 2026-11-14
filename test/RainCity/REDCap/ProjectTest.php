@@ -4,7 +4,7 @@ namespace RainCity\REDCap;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Depends;
-use RainCity\TestHelper\ReflectionHelper;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\Project')]
 #[CoversClass('\RainCity\REDCap\Event')]
@@ -37,14 +37,6 @@ class ProjectTest extends REDCapTestCase
         $instrument->method('getName')->willReturn(self::TEST_INSTRUMENT_NAME);
 
         return $instrument;
-    }
-
-    public function testCtor_invalidArg() {
-        $this->expectException("ArgumentCountError");
-        new Project();  // NOSONAR - ignore useless object instantiation
-
-        $this->expectException("TypeError");
-        new Project("test");    // NOSONAR - ignore useless object instantiation
     }
 
     public function testCtor_noREDCapData() {

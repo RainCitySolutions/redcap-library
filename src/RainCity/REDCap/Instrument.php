@@ -2,14 +2,13 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use RainCity\SerializeAsArrayTrait;
-use Serializable;
+use RCS\Traits\SerializeAsArrayTrait;
 
 /**
  * Represents an instrument/form in REDCap.
  *
  */
-class Instrument implements Serializable
+class Instrument implements \Serializable
 {
     use SerializeAsArrayTrait {
         __serialize as protected traitSerialize;

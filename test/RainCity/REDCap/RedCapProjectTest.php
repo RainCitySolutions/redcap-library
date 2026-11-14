@@ -4,42 +4,54 @@ namespace RainCity\REDCap;
 
 use IU\PHPCap\PhpCapException;
 use IU\PHPCap\RedCapApiConnectionInterface;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
-use RainCity\TestHelper\ReflectionHelper;
+use PHPUnit\Framework\MockObject\MockObject;
+use RCS\Util\ReflectionHelper;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 
 #[CoversClass('\RainCity\REDCap\RedcapProject')]
 #[CoversMethod('RainCity\REDCap\RedCapErrorHandler', '__construct')]
-final class RedCapProjectTest extends TestCase
+final class RedCapProjectTest extends REDCapTestCase
 {
     const TEST_URL = 'https://redcap.somesite.co/redcap/api';
     const TEST_TOKEN = 'FCDEBA1234567890ABCDEF1234567890';
 
     const TEST_EXCEPTION = 'Test Exception';
 
-    /** @var RedCapProject */
-    private $proj;
+    private RedCapProject $proj;
+    private LockFactory $lockFactory;
 
-    /** @var RedCapApiConnectionInterface */
-    private $connection;
+    private RedCapConfigIntf|MockObject $mockConfig;
+    private RedCapApiConnectionInterface|MockObject $mockConn;
+
 
     protected function setUp(): void
     {
-        $this->connection = $this->createMock(RedCapApiConnectionInterface::class);
-        $this->connection->method('getUrl')->willReturn(self::TEST_URL);
+        parent::setUp();
 
-        $this->proj = new RedCapProject(self::TEST_URL, self::TEST_TOKEN, true, null, null, $this->connection);
+        $this->lockFactory = new LockFactory(new InMemoryStore());
+
+        $this->mockConn = $this->createMock(RedCapApiConnectionInterface::class);
+        $this->mockConn->method('getUrl')->willReturn(self::TEST_URL);
+
+        $this->mockConfig = $this->createMock(RedCapConfigIntf::class);
+        $this->mockConfig->method('getApiUrl')->willReturn(self::TEST_URL);
+        $this->mockConfig->method('getApiToken')->willReturn(self::TEST_TOKEN);
+        $this->mockConfig->method('getConnection')->willReturn($this->mockConn);
+
+        $this->proj = new RedCapProject($this->mockConfig, $this->mockCache, $this->lockFactory, $this->stubLogger);
 
         // Ensure the cache is empty before running each of our tests
-        $this->proj->clearCache();
+        $this->mockCache->clear();
     }
 
 
     public function testCtor() {
-        $proj = new RedCapProject(self::TEST_URL, self::TEST_TOKEN);
+        $proj = new RedCapProject($this->mockConfig, $this->mockCache, $this->lockFactory, $this->stubLogger);
 
-        $token = ReflectionHelper::getObjectProperty(RedCapProject::class, 'apiToken', $proj, true);
+        $token = ReflectionHelper::getObjectProperty(RedCapProject::class, 'apiToken', $proj);
 
         $this->assertEquals(self::TEST_TOKEN, $token);
 
@@ -50,7 +62,7 @@ final class RedCapProjectTest extends TestCase
     }
 
     public function testExportRedcapVersion_withException() {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 934)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 934)));
 
         $result = $this->proj->exportRedcapVersion();
 
@@ -59,7 +71,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportInstruments_exceptionPhpFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportInstruments('php');
 
@@ -68,7 +80,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportInstruments_exceptionJsonFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportInstruments('json');
 
@@ -77,7 +89,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportInstrumentEventMappings_exceptionPhpFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportInstrumentEventMappings();
 
@@ -86,7 +98,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportInstrumentEventMappings_exceptionJsonFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportInstrumentEventMappings('json');
 
@@ -95,7 +107,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportMetadata_withException()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportMetadata();
 
@@ -104,7 +116,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportPdfFileOfInstruments_withException()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportPdfFileOfInstruments();
 
@@ -113,7 +125,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportProjectInfo_exceptionPhpFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportProjectInfo('php');
 
@@ -122,7 +134,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportProjectInfo_exceptionJsonFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 734)));
 
         $result = $this->proj->exportProjectInfo('json');
 
@@ -130,7 +142,7 @@ final class RedCapProjectTest extends TestCase
     }
 
     public function testExportRecords_exceptionPhpFormat() {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 434)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 434)));
 
         $result = $this->proj->exportRecords('php');
 
@@ -138,7 +150,7 @@ final class RedCapProjectTest extends TestCase
     }
 
     public function testExportRecords_exceptionJsonFormat() {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 434)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 434)));
 
         $result = $this->proj->exportRecords('json');
 
@@ -150,7 +162,7 @@ final class RedCapProjectTest extends TestCase
         $rcdId = 'Rcd987';
         $form = 'testInst';
 
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 343)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 343)));
 
         $result = $this->proj->exportSurveyLink($rcdId, $form);
 
@@ -162,7 +174,7 @@ final class RedCapProjectTest extends TestCase
         $recordId = 'rcdId1';
         $form = 'testInstrument';
 
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 343)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 343)));
 
         $result = $this->proj->exportSurveyReturnCode($recordId, $form);
 
@@ -171,7 +183,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testGetRecordIdFieldName_withException()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
 
         $result = $this->proj->getRecordIdFieldName();
 
@@ -180,7 +192,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportEvents_exceptionPhpFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
 
         $result = $this->proj->exportEvents();
 
@@ -189,7 +201,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportEvents_exceptionJsonFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
 
         $result = $this->proj->exportEvents('json');
 
@@ -199,39 +211,14 @@ final class RedCapProjectTest extends TestCase
     public function testCacheResponse() {
         $testVersion = '9.5.2';
 
-        $this->connection->expects($this->once())->method('callWithArray')->willReturn($testVersion);
+        $this->mockConn->expects($this->once())->method('callWithArray')->willReturn($testVersion);
 
         $result = $this->proj->exportRedcapVersion();
 
         $this->assertEquals($testVersion, $result);
 
-        $this->connection->expects($this->never())->method('callWithArray')->willReturn($testVersion);
-
-        $result = $this->proj->exportRedcapVersion();
-
-        $this->assertEquals($testVersion, $result);
-    }
-
-    public function testClearCache() {
-        $testVersion = '9.10.11';
-
-        $callback = function () use (&$testVersion) {
-            return $testVersion;
-        };
-
-        $this->
-            connection->
-            expects($this->atMost(2))->
-            method('callWithArray')->
-            willReturnCallback($callback);
-
-        $result = $this->proj->exportRedcapVersion();
-
-        $this->assertEquals($testVersion, $result);
-
-        $this->proj->clearCache();
-
-        $testVersion = '9.10.12';
+        $this->mockCache->expects($this->once())->method('get')->willReturn($testVersion);
+        $this->mockConn->expects($this->never())->method('callWithArray')->willReturn($testVersion);
 
         $result = $this->proj->exportRedcapVersion();
 
@@ -240,7 +227,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportFieldNames_exceptionPhpFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
 
         $result = $this->proj->exportFieldNames('php');
 
@@ -249,7 +236,7 @@ final class RedCapProjectTest extends TestCase
 
     public function testExportFieldNames_exceptionJsonFormat()
     {
-        $this->connection->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
+        $this->mockConn->method('callWithArray')->will($this->throwException(new PhpCapException(self::TEST_EXCEPTION, 543)));
 
         $result = $this->proj->exportFieldNames('json');
 

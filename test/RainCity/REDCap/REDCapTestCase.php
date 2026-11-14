@@ -2,13 +2,14 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use IU\PHPCap\RedCapApiConnectionInterface;
-//use IU\PHPCap\RedCapProject;
-use RainCity\TestHelper\RainCityTestCase;
-
+use Psr\SimpleCache\CacheInterface;
 
 abstract class REDCapTestCase
-    extends RainCityTestCase
+    extends TestCase
 {
     const RCD_ID_FIELD = 'record_id';
     const EMAIL_FIELD = 'email';
@@ -614,11 +615,9 @@ abstract class REDCapTestCase
 
     protected static $nextRcdId = 1;
 
-    /** @var RedCapProject */
-    protected $stubRedcapProj;
-
-    /** @var RedCapProjectFactoryIntf */
-    protected $stubProjectFactory;
+    protected RedCapProject|MockObject $mockRedcapProj;
+    protected CacheInterface|MockObject $mockCache;
+    protected LoggerInterface $stubLogger;
 
     protected static function getCurrentRcdId(): string {
         return 'ID_X_'. self::$nextRcdId;
@@ -634,17 +633,15 @@ abstract class REDCapTestCase
     {
         parent::setUp();
 
-        $stubProject = $this->setupStubProject();
-
-        $stubFactory = $this->createMock(RedCapProjectFactoryIntf::class);
-        $stubFactory->method('getProject')->willReturn($stubProject);
-
-        $this->stubProjectFactory = $stubFactory;
+        $this->setupMockProject();
+        $this->mockCache = $this->createMock(CacheInterface::class);
+        $this->stubLogger = $this->createStub(LoggerInterface::class);
     }
 
     protected function tearDown(): void {
-        $this->stubRedcapProj = null;
-        $this->stubProjectFactory = null;
+        unset($this->stubLogger);
+        unset($this->mockCache);
+        unset($this->mockRedcapProj);
 
         parent::tearDown();
     }
@@ -655,7 +652,7 @@ abstract class REDCapTestCase
     // TODO: Add support for with() callback, i.e. setWillCallback(), setWithCallback()
     public function setCallback(string $method, callable $callback) {
         if (!isset($this->mockCallbacks[$method])) {
-            $this->stubRedcapProj->method($method)->willReturnCallback(function() use ($method) {
+            $this->mockRedcapProj->method($method)->willReturnCallback(function() use ($method) {
                 $callbackFunc = $this->mockCallbacks[$method];
                 return call_user_func_array($callbackFunc, func_get_args());
             } );
@@ -669,9 +666,9 @@ abstract class REDCapTestCase
      *
      * Initialize default responses.
      */
-    private function setupStubProject(): RedCapProject {
+    private function setupMockProject(): RedCapProject|MockObject {
         // create a mock REDCapProject instance
-        $this->stubRedcapProj = $this->createMock(RedCapProject::class);
+        $this->mockRedcapProj = $this->createMock(RedCapProject::class);
 
         // setup default return values
         $this->setCallback('exportRedcapVersion',       function() { return '9.5.23'; });
@@ -745,9 +742,9 @@ abstract class REDCapTestCase
         $mockConnection = $this->createMock(RedCapApiConnectionInterface::class);
         $mockConnection->method('getUrl')->willReturn('https://redcap.test.co/redcap/api');
 
-        $this->stubRedcapProj->method('getConnection')->willReturn($mockConnection);
+        $this->mockRedcapProj->method('getConnection')->willReturn($mockConnection);
 
-        return $this->stubRedcapProj;
+        return $this->mockRedcapProj;
     }
 
     protected function useClassicProject() {
@@ -785,7 +782,7 @@ abstract class REDCapTestCase
         $result = array();
         $fieldsToUse = array();
         $eventsToUse = array();
-        $projUsesEvents = !empty($this->stubRedcapProj->exportEvents());
+        $projUsesEvents = !empty($this->mockRedcapProj->exportEvents());
 
         // Forms have precedence, add all the form fields to the list.
         if (isset($forms)) {
@@ -823,9 +820,8 @@ abstract class REDCapTestCase
 
         // If no record ids were requested include all the records
         if (!isset($recordIds) || empty($recordIds)) {
-            $recordIds = self::ALL_VALID_RECORD_IDS;
-        }
-        else {
+            $recordIds = self::ALL_VALID_RCD_IDS;
+        } else {
             // Otherwise use all the valid record ids
             $recordIds = array_intersect(self::ALL_VALID_RCD_IDS, $recordIds);
         }
@@ -833,12 +829,10 @@ abstract class REDCapTestCase
         if ($projUsesEvents) {
             if (isset($events)) {
                 $eventsToUse = array_intersect(self::ALL_VALID_EVENTS, $events);
-            }
-            else {
+            } else {
                 $eventsToUse = static::ALL_VALID_EVENTS;
             }
-        }
-        else {
+        } else {
             $eventsToUse = array('classic_event');   // dummy event so we run through the loop below once
         }
 
@@ -891,13 +885,13 @@ abstract class REDCapTestCase
     protected function createInstrument(string $instrumentName, bool $withEvents = true) {
         $testObj = null;
 
-        $instruments = $this->stubRedcapProj->exportInstruments();
+        $instruments = $this->mockRedcapProj->exportInstruments();
 
         foreach ($instruments as $instName => $instLabel) {
             if ($instName === $instrumentName) {
-                $fieldNames = $this->stubRedcapProj->exportFieldNames();
-                $metadata = $this->stubRedcapProj->exportMetadata();
-                $eventMappings = $withEvents ? $this->stubRedcapProj->exportInstrumentEventMappings() : array();
+                $fieldNames = $this->mockRedcapProj->exportFieldNames();
+                $metadata = $this->mockRedcapProj->exportMetadata();
+                $eventMappings = $withEvents ? $this->mockRedcapProj->exportInstrumentEventMappings() : array();
 
                 $testObj = new Instrument($instName, $instLabel, $fieldNames, $metadata, $eventMappings);
                 break;

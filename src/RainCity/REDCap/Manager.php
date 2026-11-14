@@ -2,28 +2,29 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use RainCity\MethodLogger;
+use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use RCS\Logging\MethodLogger;
 
 class Manager
 {
     public function __construct(
-        private RedCapProjectFactoryIntf $redcapProjFactory,
-        private string $projectId,
-        private ?CacheInterface $cache = null
+        private DeferredRedCapProject $defRedCapProject,
+        private CacheInterface $cache,
+        private LoggerInterface $logger
         )
     {
     }
 
     public function getProject(): ?Project
     {
-        $projectCacheKey = 'RedcapProject-'.$this->redcapProjFactory->getProject($this->projectId)->getHash();
+        $projectCacheKey = 'RedcapProject-'.$this->defRedCapProject->getRedCapProject()->getHash();
 
-        $project = isset($this->cache) ? $this->cache->get($projectCacheKey) : null;
+        $project = $this->cache->get($projectCacheKey, null);
         if (!isset($project)) {
             $project = $this->loadProject();
 
-            if (isset($this->cache) && isset($project)) {
+            if (isset($project)) {
                 $this->cache->set($projectCacheKey, $project);
             }
         }
@@ -80,7 +81,7 @@ class Manager
         ?array $events = array()
         ): ?Record
     {
-        $record = new Record($this->redcapProjFactory->getProject($this->projectId), $fields, null, $instruments, $events);
+        $record = new Record($this->defRedCapProject->getRedCapProject(), $this->logger, $fields, null, $instruments, $events);
 
         if (!$record->loadRecordById($recordId)) {
             $record = null;
@@ -94,7 +95,7 @@ class Manager
     {
         $project = null;
 
-        $projInfo = $this->redcapProjFactory->getProject($this->projectId)->exportProjectInfo();
+        $projInfo = $this->defRedCapProject->getRedCapProject()->exportProjectInfo();
 
         if (count($projInfo) != 0) {
             $project = new Project($projInfo);
@@ -115,9 +116,9 @@ class Manager
      */
     private function loadInstruments(Project $project): void
     {
-        $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
+        $methodLogger = new MethodLogger($this->logger); // NOSONAR - ignore unused variable
 
-        $redcapProject = $this->redcapProjFactory->getProject($this->projectId);
+        $redcapProject = $this->defRedCapProject->getRedCapProject();
 
         $fieldnames = $redcapProject->exportFieldNames();
         $metadata = $redcapProject->exportMetadata();
@@ -139,9 +140,9 @@ class Manager
      */
     private function loadEvents(Project $project): void
     {
-        $methodLogger = new MethodLogger(); // NOSONAR - ignore unused variable
+        $methodLogger = new MethodLogger($this->logger); // NOSONAR - ignore unused variable
 
-        $events = $this->redcapProjFactory->getProject($this->projectId)->exportEvents();
+        $events = $this->defRedCapProject->getRedCapProject()->exportEvents();
 
         foreach ($events as $event) {
             $project->addEvent(new Event ($event));

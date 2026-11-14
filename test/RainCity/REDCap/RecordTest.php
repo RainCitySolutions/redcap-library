@@ -4,7 +4,7 @@ namespace RainCity\REDCap;
 
 
 use PHPUnit\Framework\Attributes\CoversClass;
-use RainCity\TestHelper\ReflectionHelper;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\Record')]
 class RecordTest extends REDCapTestCase
@@ -21,39 +21,21 @@ class RecordTest extends REDCapTestCase
     /**
      *
      */
-    public function testCtor_noArg()
-    {
-        $this->expectException("ArgumentCountError");
-        new Record();   // NOSONAR - ignore useless object instantiation
-    }
-
-    /**
-     *
-     */
-    public function testCtor_invalidArg()
-    {
-        $this->expectException("TypeError");
-        new Record((object)[], 'fields');   // NOSONAR - ignore useless object instantiation
-    }
-
-    /**
-     *
-     */
     public function testCtor_onlyProj()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
-        $proj = ReflectionHelper::getObjectProperty(Record::class, 'redcapProj', $obj);
+        $proj = ReflectionHelper::getObjectProperty(Record::class, 'project', $obj);
         $fieldNames = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
         $fieldArray = ReflectionHelper::getObjectProperty(Record::class, 'fieldArray', $obj);
         $dirtyFlags = ReflectionHelper::getObjectProperty(Record::class, 'dirtyFieldArray', $obj);
 
-        $this->assertEquals($this->stubRedcapProj, $proj);
+        $this->assertEquals($this->mockRedcapProj, $proj);
         $this->assertEmpty($fieldNames, self::FIELD_NAME_LIST_SHOULD_BE_EMPTY);
         $this->assertEmpty($fieldArray, 'Field list should be empty');
         $this->assertEmpty($dirtyFlags, 'Dirty flags list should be empty');
 
-        $redcapFields = $this->stubRedcapProj->exportFieldNames();
+        $redcapFields = $this->mockRedcapProj->exportFieldNames();
         $validFields = ReflectionHelper::getObjectProperty(Record::class, 'validFields', $obj);
 
         foreach ($redcapFields as $field) {
@@ -67,7 +49,7 @@ class RecordTest extends REDCapTestCase
     public function testCtor_projAndFields()
     {
         $testFields = array(static::EMAIL_FIELD);
-        $obj = new Record($this->stubRedcapProj, $testFields);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, $testFields);
 
         $fields = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
 
@@ -81,7 +63,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj, [], static::TEST_RCD_0_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, [], static::TEST_RCD_0_ID);
 
         $recordId = ReflectionHelper::getObjectProperty(Record::class, 'recordId', $obj);
         $fieldNames = ReflectionHelper::getObjectProperty(Record::class, 'redcapFields', $obj);
@@ -107,7 +89,7 @@ class RecordTest extends REDCapTestCase
     public function testIsValidEvent_noParam() {
         $this->expectException('ArgumentCountError');
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent');
     }
@@ -117,7 +99,7 @@ class RecordTest extends REDCapTestCase
     public function testIsValidEvent_classic_null() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $this->assertTrue(ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent', null));
     }
@@ -127,7 +109,7 @@ class RecordTest extends REDCapTestCase
     public function testIsValidEvent_classic_anyEvent() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $this->assertTrue(ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent', 'anyEvent'));
     }
@@ -135,7 +117,7 @@ class RecordTest extends REDCapTestCase
     /**
      */
     public function testIsValidEvent_events_null() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $this->assertTrue(ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent', null));
     }
@@ -143,7 +125,7 @@ class RecordTest extends REDCapTestCase
     /**
      */
     public function testIsValidEvent_events_validEvent() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $this->assertTrue(ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent', static::TEST_EVENT_C));
     }
@@ -151,7 +133,7 @@ class RecordTest extends REDCapTestCase
     /**
      */
     public function testIsValidEvent_events_invalidEvent() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $this->assertFalse(ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'isValidEvent', 'anyEvent'));
     }
@@ -168,7 +150,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_emptyRecord() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array();
 
@@ -182,7 +164,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_multipleRecords() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(
             array (static::RCD_ID_FIELD => static::TEST_RCD_1_ID),
@@ -200,7 +182,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_notRedcapData() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(1);
 
@@ -215,7 +197,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_rcdIdExists() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_2_ID));
 
@@ -230,7 +212,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_missingRcdId() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj, [], static::TEST_RCD_3_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, [], static::TEST_RCD_3_ID);
 
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_3_ID), null, array(self::CONSENT_FORM, self::HISTORY_FORM));
 
@@ -246,7 +228,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_recordIdNotSet() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(array());
 
@@ -259,7 +241,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input not REDCap data
      */
     public function testValidateRecord_events_notRedcapData() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(1);
 
@@ -272,7 +254,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input not REDCap data
      */
     public function testValidateRecord_events_notRedcapData2() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(array(), 2);
 
@@ -286,7 +268,7 @@ class RecordTest extends REDCapTestCase
      */
 /*
     public function testValidateRecord_events_moreRecordsThanEvents() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->stubRedcapProj, $this->stubLogger);
 
         // Record has 2 entries but there are only 1 events
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', array(static::TEST_EVENT_B), $obj);
@@ -306,7 +288,7 @@ class RecordTest extends REDCapTestCase
      */
 /*
     public function testValidateRecord_events_moreEventsThanRecords() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->stubRedcapProj, $this->stubLogger);
 
         // Record has 2 entries but there are only 3 events
         $testRcd = array(
@@ -323,7 +305,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input already has a record id
      */
     public function testValidateRecord_events_rcdIdAndEventExists() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', array(static::TEST_EVENT_A, static::TEST_EVENT_B), $obj);
         $testRcd = array(
@@ -346,7 +328,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input is missing the record id
      */
     public function testValidateRecord_events_missingRcdId() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', static::TEST_RCD_3_ID, $obj);
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', array(static::TEST_EVENT_B, static::TEST_EVENT_C), $obj);
@@ -368,7 +350,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input is missing the event names
      */
     public function testValidateRecord_events_missingEventName() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', array(static::TEST_EVENT_A, static::TEST_EVENT_C), $obj);
         $testRcd = array(
@@ -391,7 +373,7 @@ class RecordTest extends REDCapTestCase
     public function testValidateRecord_classic_completedTimestampFields() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(
             array(
@@ -419,7 +401,7 @@ class RecordTest extends REDCapTestCase
      * Validate behavior when input is missing the event names
      */
     public function testGetFields() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testFields = array(
             static::EMAIL_FIELD,
@@ -451,7 +433,7 @@ class RecordTest extends REDCapTestCase
     /**
      */
     public function testGetRecordIdFieldName() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $rcdIdField = ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'getRecordIdFieldName');
 
@@ -471,7 +453,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testLoadRecord_emptyArray()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array());
 
@@ -491,7 +473,7 @@ class RecordTest extends REDCapTestCase
         $testRcds = $this->generateRedcapRecord(array(self::TEST_RCD_1_ID, self::TEST_RCD_2_ID, self::TEST_RCD_3_ID));
 
         // Multiple records (record ids) should fail. A Record represents a single record in REDCap.
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         $result = $obj->loadRecord($testRcds);
 
         $this->assertFalse($result);
@@ -505,7 +487,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array(array('foo@bar.net')));
 
@@ -524,7 +506,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array(array(static::EMAIL_FIELD => null)));
 
@@ -543,7 +525,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array(array(static::PHONE_FIELD => new \stdClass())));
 
@@ -560,7 +542,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testLoadRecord_invalidEvent()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array(array(Record::REDCAP_EVENT_NAME => 'bad_event', 'some_field' => 'some_value')));
 
@@ -582,7 +564,7 @@ class RecordTest extends REDCapTestCase
 
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord($testRecord);
 
@@ -603,7 +585,7 @@ class RecordTest extends REDCapTestCase
 
         $testArray = array(array(static::PHONE_FIELD => 2));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord($testArray);
 
@@ -624,7 +606,7 @@ class RecordTest extends REDCapTestCase
 
         $testArray = array(array(static::EMAIL_FIELD => 'bar@foo.edu'));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord($testArray);
 
@@ -645,7 +627,7 @@ class RecordTest extends REDCapTestCase
 
         $testArray = array(array('invalidField' => 'bar@foo.edu'));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', static::TEST_RCD_1_ID, $obj);
 
         $result = $obj->loadRecord($testArray);
@@ -665,7 +647,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_1_ID));
 
@@ -696,7 +678,7 @@ class RecordTest extends REDCapTestCase
     {
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord($testRcd);
 
@@ -731,7 +713,7 @@ class RecordTest extends REDCapTestCase
     {
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_5_ID), null, array(static::CONSENT_FORM, static::HISTORY_FORM));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->stubRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', static::TEST_RCD_5_ID, $obj);
 
         $result = $obj->loadRecord($testRcd);
@@ -769,7 +751,7 @@ class RecordTest extends REDCapTestCase
         $testEvents = array(static::TEST_EVENT_A, static::TEST_EVENT_B);
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID), null, null, $testEvents);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
@@ -810,7 +792,7 @@ class RecordTest extends REDCapTestCase
     public function testLoadRecord_classicBadRecord() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecord(array(1));
 
@@ -827,7 +809,7 @@ class RecordTest extends REDCapTestCase
     public function testLoadRecord_classic() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_3_ID));
 
@@ -858,7 +840,7 @@ class RecordTest extends REDCapTestCase
         // generate record which doesn't include a record id or event name (i.e. don't include the first form)
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_5_ID), null, array(static::CONSENT_FORM, static::HISTORY_FORM), $testEvents);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
         $result = $obj->loadRecord($testRcd);
@@ -879,7 +861,7 @@ class RecordTest extends REDCapTestCase
     public function testLoadRecord_specificEvents_noEventField() {
         $testEvents = array(self::TEST_EVENT_A, self::TEST_EVENT_C);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         $obj->setEvents($testEvents);
 
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_5_ID), null, array(self::CONSENT_FORM), $testEvents);
@@ -901,7 +883,7 @@ class RecordTest extends REDCapTestCase
         $testEvents = array(static::TEST_EVENT_B);
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID), null, null, $testEvents);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
         $result = $obj->loadRecord($testRcd);
@@ -923,7 +905,7 @@ class RecordTest extends REDCapTestCase
         $testEvents = array(self::TEST_EVENT_B, self::TEST_EVENT_C);
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_6_ID), null, null, $testEvents);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
         $result = $obj->loadRecord($testRcd);
@@ -952,7 +934,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testLoadRecordById_invalidRecord()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecordById(static::INVALID_TEST_RCD_ID);
 
@@ -973,7 +955,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecordById(static::TEST_RCD_2_ID);
 
@@ -993,7 +975,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testLoadRecordById_events_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $result = $obj->loadRecordById(static::TEST_RCD_5_ID);
 
@@ -1018,7 +1000,7 @@ class RecordTest extends REDCapTestCase
             return $testRcd;
         } );
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
@@ -1054,7 +1036,7 @@ class RecordTest extends REDCapTestCase
         // generate record which doesn't include a record id or event name (i.e. don't include the first form)
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_5_ID), null, array(static::CONSENT_FORM, static::HISTORY_FORM));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->stubRedcapProj, $this->stubLogger);
         $this->setCallback('exportRecords', function() use ($testRcd) {
             return $testRcd;
         } );
@@ -1090,7 +1072,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() { return [];} );
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         // add field data which will also set a dirty flag
         $obj->setFieldValue(static::EMAIL_FIELD, $oldValue);
@@ -1116,7 +1098,7 @@ class RecordTest extends REDCapTestCase
 
         $oldValue = 'someaddress@emailserver.com';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         // add field data which will also set a dirty flag
         $obj->setFieldValue(static::EMAIL_FIELD, $oldValue);
@@ -1153,7 +1135,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFields_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->setFields(array(static::EMAIL_FIELD));
 
@@ -1170,7 +1152,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFields_duplicateField()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $fieldArray = array(static::EMAIL_FIELD, static::PHONE_FIELD);
 
@@ -1192,7 +1174,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFields_changeFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $oldFieldArray = array(static::EMAIL_FIELD, static::PHONE_FIELD);
         $newFieldArray = array(static::ADDRESS_FIELD);
@@ -1214,7 +1196,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFields_removeFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $fieldArray = array(static::EMAIL_FIELD, static::PHONE_FIELD);
 
@@ -1234,7 +1216,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFields_invalidFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->setFields(array('foo', 'bar'));
 
@@ -1257,7 +1239,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetFields_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $fieldNames = $obj->getFields();
 
@@ -1271,7 +1253,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetFields_withFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapFields', array(static::PHONE_FIELD), $obj);
 
@@ -1289,7 +1271,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testAddFields_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->addFields(array(static::PHONE_FIELD, static::ADDRESS_FIELD));
 
@@ -1314,7 +1296,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testAddFields_existingFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapFields', array(static::EMAIL_FIELD), $obj);
 
@@ -1333,7 +1315,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testAddFields_invalidFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->addFields(array('cow', 'horse'));
 
@@ -1356,7 +1338,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testRemoveFields_existingFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapFields', array(static::EMAIL_FIELD, static::ADDRESS_FIELD), $obj);
 
@@ -1374,7 +1356,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testRemoveFields_invalidFields()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapFields', array(static::EMAIL_FIELD), $obj);
 
@@ -1401,7 +1383,7 @@ class RecordTest extends REDCapTestCase
     {
         $testRcdId = 'newObjRcdId';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->setRecordId($testRcdId);
 
@@ -1422,7 +1404,7 @@ class RecordTest extends REDCapTestCase
     {
         $testRcdId = 'existingRcdId';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', 'someRcdId', $obj);
 
@@ -1447,7 +1429,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetRecordId_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $rcdId = $obj->getRecordId();
 
@@ -1462,7 +1444,7 @@ class RecordTest extends REDCapTestCase
     {
         $testRcdId = 'testRcdId';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', $testRcdId, $obj);
 
@@ -1485,7 +1467,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetFieldValue_invalidField()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->setFieldValue('foo', 'bar');
 
@@ -1504,7 +1486,7 @@ class RecordTest extends REDCapTestCase
     {
         $testEmail = 'bob@foobar.cc';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $obj->setFieldValue(static::EMAIL_FIELD, $testEmail);
 
@@ -1536,7 +1518,7 @@ class RecordTest extends REDCapTestCase
     {
         $testEmail = 'bob@foobar.cc';
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array(static::TEST_EVENT_A => array(static::EMAIL_FIELD => 'before@setfield.co')), $obj);
 
@@ -1574,7 +1556,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetEvents()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $prop = ReflectionHelper::getObjectProperty(Record::class, 'redcapEvents', $obj);
 
@@ -1603,7 +1585,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetInstruments_invalidInstrument()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $prop = ReflectionHelper::getObjectProperty(Record::class, 'redcapInstruments', $obj);
 
@@ -1623,7 +1605,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testSetInstruments_validInstruments()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $prop = ReflectionHelper::getObjectProperty(Record::class, 'redcapInstruments', $obj);
 
@@ -1659,7 +1641,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_1_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_1_ID);
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array_keys($testRcd[0]));
 
@@ -1684,7 +1666,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_3_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_3_ID);
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array(static::RACE_FIELD));
 
@@ -1701,7 +1683,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_2_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_2_ID);
 
         $this->expectException('InvalidArgumentException');
         ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array_keys($testRcd[0]));
@@ -1716,7 +1698,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_4_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_4_ID);
 
         foreach($testRcd as &$entry) {
             // remove the record id and event fields from the test record
@@ -1739,7 +1721,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_6_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_6_ID);
 
         $this->expectException('InvalidArgumentException');
         ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array(static::RACE_FIELD));
@@ -1761,7 +1743,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_6_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_6_ID);
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array(static::RACE_FIELD), static::TEST_EVENT_C);
 
@@ -1779,7 +1761,7 @@ class RecordTest extends REDCapTestCase
 
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_6_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_6_ID);
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $obj, 'collapeCheckboxFields', array(static::FULLNAME_FIELD, static::PHONE_FIELD), static::TEST_EVENT_C);
 
@@ -1799,9 +1781,9 @@ class RecordTest extends REDCapTestCase
      */
     public function testSave_newObject()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
-        $this->stubRedcapProj
+        $this->mockRedcapProj
             ->expects($this->once())
             ->method('importRecords')
             ->with($this->callback(function($rcds) {
@@ -1832,7 +1814,7 @@ class RecordTest extends REDCapTestCase
     public function testSave_classic_newValues()
     {
         $this->useClassicProject();
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_1_ID));
         $obj->loadRecord($testRcd);
@@ -1840,7 +1822,7 @@ class RecordTest extends REDCapTestCase
         // clear out the record id so one gets generated on save()
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', null, $obj);
 
-        $this->stubRedcapProj
+        $this->mockRedcapProj
             ->expects($this->once())
             ->method('importRecords')
             ->with($this->callback(function($saveRcd) use ($testRcd) {
@@ -1863,10 +1845,10 @@ class RecordTest extends REDCapTestCase
 
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_2_ID));
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         $obj->loadRecord($testRcd);
 
-        $this->stubRedcapProj
+        $this->mockRedcapProj
         ->expects($this->once())
         ->method('importRecords')
         ->with($testRcd);
@@ -1880,14 +1862,14 @@ class RecordTest extends REDCapTestCase
      */
     public function testSave_events_newValues()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         $testRcd = $this->generateRedcapRecord(array(self::TEST_RCD_1_ID));
         $obj->loadRecord($testRcd);
 
         // clear out the record id so one gets generated on save()
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', null, $obj);
 
-        $this->stubRedcapProj
+        $this->mockRedcapProj
         ->expects($this->once())
         ->method('importRecords')
         ->with($this->callback(function($saveRcd) use ($testRcd) {
@@ -1910,12 +1892,12 @@ class RecordTest extends REDCapTestCase
         $testEvents = array(static::TEST_EVENT_A, static::TEST_EVENT_B);
         $testRcd = $this->generateRedcapRecord(array(static::TEST_RCD_4_ID), null, null, $testEvents);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
         $obj->loadRecord($testRcd);
 
-        $this->stubRedcapProj
+        $this->mockRedcapProj
             ->expects($this->once())
             ->method('importRecords')
             ->with($testRcd);
@@ -1936,7 +1918,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetREDCapArray_invalidEvent()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_2_ID, $obj);
         ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array (self::EMAIL_FIELD => 'get@redcaparray.co'), $obj);
@@ -1954,7 +1936,7 @@ class RecordTest extends REDCapTestCase
     {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array(
             self::EMAIL_FIELD => 'before@setfield.co',
@@ -1988,7 +1970,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetREDCapArray_withAllEvents()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_A => array (
@@ -2044,7 +2026,7 @@ class RecordTest extends REDCapTestCase
      */
     public function testGetREDCapArray_withSpecificEvent()
     {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2097,7 +2079,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetFieldValue_withEvents_noEvent() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2127,7 +2109,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetFieldValue_withEvents_specificEvent() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_A => array (
@@ -2159,7 +2141,7 @@ class RecordTest extends REDCapTestCase
     public function testGetEvents_explicitEvents() {
         $testEvents = array(static::TEST_EVENT_A, static::TEST_EVENT_C);
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(Record::class, 'redcapEvents', $testEvents, $obj);
 
@@ -2177,9 +2159,9 @@ class RecordTest extends REDCapTestCase
 
 //        $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
-        $obj = new Record($this->stubRedcapProj, array(), static::TEST_RCD_4_ID);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger, array(), static::TEST_RCD_4_ID);
 
-//        $obj = new Record($this->stubRedcapProj);
+//        $obj = new Record($this->stubRedcapProj, $this->stubLogger);
 
         $actualEvents = $obj->getEvents();
 
@@ -2199,7 +2181,7 @@ class RecordTest extends REDCapTestCase
     public function testGetMostRecentFieldValue_classic_noValue() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             // Leave out for test self::SHORTNAME_FIELD => 'Mary',
@@ -2220,7 +2202,7 @@ class RecordTest extends REDCapTestCase
     public function testGetMostRecentFieldValue_classic_blankValue() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::SHORTNAME_FIELD => '',
@@ -2241,7 +2223,7 @@ class RecordTest extends REDCapTestCase
     public function testGetMostRecentFieldValue_classic_withValue() {
         $this->useClassicProject();
 
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::SHORTNAME_FIELD => 'Larry',
@@ -2260,7 +2242,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetMostRecentFieldValue_withEvents_noValues() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2287,7 +2269,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetMostRecentFieldValue_withEvents_blankValues() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2314,7 +2296,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetMostRecentFieldValue_withEvents_firstValue() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2341,7 +2323,7 @@ class RecordTest extends REDCapTestCase
      *
      */
     public function testGetMostRecentFieldValue_withEvents_lastValue() {
-        $obj = new Record($this->stubRedcapProj);
+        $obj = new Record($this->mockRedcapProj, $this->stubLogger);
 
         $testRcd = array (
             self::TEST_EVENT_B => array (
@@ -2368,7 +2350,7 @@ class RecordTest extends REDCapTestCase
  *  isValidRedcapEntry() currently commented out
  *
     public function testIsValidRedcapEntry_emptyArray() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array();
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2377,7 +2359,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapEntry_invalidKey() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aValue'); // implied integer key of 0
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2386,7 +2368,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapEntry_invalidValue() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aField' => array('aValue'));
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2395,7 +2377,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapEntry_validStringValue() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aField' => 'aValue');
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2404,7 +2386,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapEntry_validIntValue() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aField' => 1415);
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2413,7 +2395,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapEntry_validBlankValue() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aField' => '');
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapEntry', $testEntry);
@@ -2426,7 +2408,7 @@ class RecordTest extends REDCapTestCase
  *  isValidRedcapStructure() currently commented out
  *
     public function testIsValidRedcapStructure_emptyArray() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array();
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapStructure', $testEntry);
@@ -2435,7 +2417,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapStructure_plainArray() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('a', 'b');
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapStructure', $testEntry);
@@ -2444,7 +2426,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapStructure_stringKey() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array('aKey' => 'aValue');
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapStructure', $testEntry);
@@ -2453,7 +2435,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapStructure_invalidEntry() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array(array('aValue'));
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapStructure', $testEntry);
@@ -2462,7 +2444,7 @@ class RecordTest extends REDCapTestCase
     }
 
     public function testIsValidRedcapStructure_validEntry() {
-        $testObj = new Record($this->stubRedcapProj);
+        $testObj = new Record($this->stubRedcapProj, $this->stubLogger);
         $testEntry = array(array('someField' => 'someValue'));
 
         $result = ReflectionHelper::invokeObjectMethod(Record::class, $testObj, 'isValidRedcapStructure', $testEntry);

@@ -5,6 +5,7 @@ namespace RainCity\REDCap;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\MockObject\MockObject;
 
 #[CoversClass('\RainCity\REDCap\SurveyStatus')]
 #[CoversMethod('RainCity\REDCap\CompletedFieldCount', '__construct')]
@@ -14,11 +15,8 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 #[CoversMethod('RainCity\REDCap\CompletedFieldCount', 'getRequiredCount')]
 class SurveyStatusTest extends REDCapTestCase
 {
-    /** @var Instrument */
-    private $mockInst;
-
-    /** @var InstrumentRecord */
-    private $mockInstRcd;
+    private Instrument|MockObject $mockInst;
+    private InstrumentRecord|MockObject $mockInstRcd;
 
     protected function setUp(): void {
         parent::setUp();

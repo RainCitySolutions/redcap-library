@@ -2,7 +2,7 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use RainCity\SerializeAsArrayTrait;
+use RCS\Traits\SerializeAsArrayTrait;
 
 class Event implements \Serializable
 {
@@ -12,7 +12,7 @@ class Event implements \Serializable
 
     /**
      *
-     * @param array<string, string> $data
+     * @param array<string,string> $data 
      */
     public function __construct(array $data)
     {

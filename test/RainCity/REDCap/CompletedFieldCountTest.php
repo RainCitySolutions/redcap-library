@@ -4,7 +4,7 @@ namespace RainCity\REDCap;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use RainCity\TestHelper\ReflectionHelper;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\CompletedFieldCount')]
 class CompletedFieldCountTest extends TestCase

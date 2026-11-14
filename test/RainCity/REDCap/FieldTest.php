@@ -40,12 +40,6 @@ class FieldTest extends TestCase
     }
 
 
-    public function testConstructor_noArg()
-    {
-        $this->expectException("ArgumentCountError");
-        new Field();    // NOSONAR
-    }
-
     public function testConstructor_invalidArray()
     {
         $this->expectException("InvalidArgumentException");

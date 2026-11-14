@@ -3,22 +3,15 @@ declare(strict_types = 1);
 namespace RainCity\REDCap;
 
 use IU\PHPCap\PhpCapException;
+use Override;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Log\LoggerInterface;
-use RainCity\TestHelper\ReflectionHelper;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\RedCapErrorHandler')]
 class RedCapErrorHandlerTest extends TestCase
 {
-    public function testCtor() {
-        $obj = new RedCapErrorHandler();
-
-        $log = ReflectionHelper::getObjectProperty(RedCapErrorHandler::class, 'logger', $obj);
-
-        $this->assertInstanceOf(LoggerInterface::class, $log);
-    }
-
     /**
      * @expectedException PhpCapException
      */
@@ -29,7 +22,7 @@ class RedCapErrorHandlerTest extends TestCase
         ->expects($this->exactly(2))
         ->method('error');
 
-        $obj = new RedCapErrorHandler();
+        $obj = new RedCapErrorHandler($stubLogger);
         ReflectionHelper::setObjectProperty(RedCapErrorHandler::class, 'logger', $stubLogger, $obj);
 
         $this->expectException(PhpCapException::class);

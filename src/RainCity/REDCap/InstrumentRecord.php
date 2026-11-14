@@ -3,6 +3,7 @@ declare(strict_types = 1);
 namespace RainCity\REDCap;
 
 use IU\PHPCap\RedCapProject;
+use Psr\Log\LoggerInterface;
 
 /**
  * An extension of the Record class that retains data for a particular
@@ -13,8 +14,6 @@ use IU\PHPCap\RedCapProject;
  */
 class InstrumentRecord extends Record
 {
-    private Instrument $instrument;
-
     private ?InstrumentRecord $nextInstrumentRcd = null;
 
     /**
@@ -30,17 +29,22 @@ class InstrumentRecord extends Record
      *
      * @param RedCapProject $proj The a REDCapProject instance to use in communicating with REDCap.
      * @param Instrument $instrument An initialized instance of Instrument.
-     * @param string|int $recordId The id of an existing REDCap record to load for this instrument.
+     * @param string|int|null $recordId The id of an existing REDCap record to load for this instrument.
      */
-    public function __construct(RedCapProject $proj, Instrument $instrument, string|int $recordId = null)
+    public function __construct(
+        RedCapProject $proj,
+        private Instrument $instrument,
+        LoggerInterface $logger,
+        string|int|null $recordId = null
+        )
     {
         $this->instrument = $instrument;
 
         if ($instrument->hasNextInstrument()) {
-            $this->nextInstrumentRcd = new InstrumentRecord($proj, $instrument->getNextInstrument(), $recordId);
+            $this->nextInstrumentRcd = new InstrumentRecord($proj, $instrument->getNextInstrument(), $logger, $recordId);
         }
 
-        parent::__construct($proj, $instrument->getAllFieldNames(), $recordId, array($instrument->getName()), $instrument->getEvents());
+        parent::__construct($proj, $logger, $instrument->getAllFieldNames(), $recordId, array($instrument->getName()), $instrument->getEvents());
 
         $this->initSurveyStatus();
     }

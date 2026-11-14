@@ -4,7 +4,6 @@ namespace RainCity\REDCap;
 
 use IU\PHPCap\ErrorHandler;
 use Psr\Log\LoggerInterface;
-use RainCity\Logging\Logger;
 
 /**
  * PhpCap Error Handler to log errors
@@ -12,12 +11,10 @@ use RainCity\Logging\Logger;
  */
 class RedCapErrorHandler extends ErrorHandler
 {
-    /** @var LoggerInterface */
-    private $logger;
-
-    public function __construct()
+    public function __construct(
+        private LoggerInterface $logger
+    )
     {
-        $this->logger = Logger::getLogger(get_class($this));
     }
 
     /**

@@ -12,8 +12,8 @@ class CompletedFieldCount
     public function __construct(
         int $completedCnt = 0,
         int $requiredCnt= 0,
-        string $firstIncompleteInstrument = null,
-        string $firstIncompleteField = null
+        ?string $firstIncompleteInstrument = null,
+        ?string $firstIncompleteField = null
         )
     {
         $this->completedCnt = $completedCnt;

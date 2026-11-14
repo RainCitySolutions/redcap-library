@@ -4,7 +4,7 @@ namespace RainCity\REDCap;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
-use RainCity\TestHelper\ReflectionHelper;
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\InstrumentRecord')]
 #[CoversMethod('RainCity\REDCap\CompletedFieldCount', '__construct')]
@@ -71,11 +71,9 @@ class InstrumentRecordTest extends REDCapTestCase
     private const JANE_FULL_NAME = 'Jane Doe';
     private const TIMESTAMP_SUFFIX = '_timestamp';
 
-    /** @var InstrumentRecord instance used for testing */
-    private $testObj;
+    private InstrumentRecord $testObj;
 
-    /** @var Instrument instance used for testing */
-    private $testInstrument;
+    private Instrument $testInstrument;
 
     private function createMockStatus(string $method, $retValue): SurveyStatus {
         $mock = $this->createMock(SurveyStatus::class);
@@ -91,8 +89,9 @@ class InstrumentRecordTest extends REDCapTestCase
 
         // Load a random record
         $this->testObj = new InstrumentRecord(
-            $this->stubRedcapProj,
+            $this->mockRedcapProj,
             $this->testInstrument,
+            $this->stubLogger,
             static::ALL_VALID_RCD_IDS[rand(0, count(static::ALL_VALID_RCD_IDS) - 1)]
             );
     }
@@ -103,7 +102,7 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $testInst->setNextInstrument($nextInst);
 
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $testInst, $this->stubLogger);
 
         $prop = ReflectionHelper::getObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $instRcd);
 
@@ -117,7 +116,7 @@ class InstrumentRecordTest extends REDCapTestCase
     public function testGetStatus_classic() {
         $this->useClassicProject();
 
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $this->testInstrument, $this->stubLogger);
 
         $status = $instRcd->getStatus();
 
@@ -126,7 +125,7 @@ class InstrumentRecordTest extends REDCapTestCase
     }
 
     public function testGetStatus_events() {
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $this->testInstrument);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $this->testInstrument, $this->stubLogger);
 
         $instrumentEvents = $this->testInstrument->getEvents();
 
@@ -155,7 +154,7 @@ class InstrumentRecordTest extends REDCapTestCase
     public function testCanEdit_withNextInstrument() {
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('canEdit', false)), $this->testObj);
 
-        $nextInst = new InstrumentRecord($this->stubRedcapProj, $this->createInstrument(static::CONSENT_FORM));
+        $nextInst = new InstrumentRecord($this->mockRedcapProj, $this->createInstrument(static::CONSENT_FORM), $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('canEdit', true)), $nextInst);
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $nextInst, $this->testObj);
@@ -188,7 +187,7 @@ class InstrumentRecordTest extends REDCapTestCase
     public function testNotStarted_withNextInstrument() {
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('notStarted', true)), $this->testObj);
 
-        $nextInst = new InstrumentRecord($this->stubRedcapProj, $this->createInstrument(static::CONSENT_FORM));
+        $nextInst = new InstrumentRecord($this->mockRedcapProj, $this->createInstrument(static::CONSENT_FORM), $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('notStarted', false)), $nextInst);
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $nextInst, $this->testObj);
@@ -225,7 +224,7 @@ class InstrumentRecordTest extends REDCapTestCase
     public function testIsComplete_withNextInstrument() {
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('isComplete', true)), $this->testObj);
 
-        $nextInst = new InstrumentRecord($this->stubRedcapProj, $this->createInstrument(static::CONSENT_FORM));
+        $nextInst = new InstrumentRecord($this->mockRedcapProj, $this->createInstrument(static::CONSENT_FORM), $this->stubLogger);
 
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'status', array(static::TEST_EVENT_A => $this->createMockStatus('isComplete', false)), $nextInst);
         ReflectionHelper::setObjectProperty(InstrumentRecord::class, 'nextInstrumentRcd', $nextInst, $this->testObj);
@@ -278,7 +277,7 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $testInst = $this->createInstrument(static::DEMOGRAPHICS_FORM);
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst, static::TEST_RCD_4_ID);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $testInst, $this->stubLogger, static::TEST_RCD_4_ID);
 
         $completedCnt = count($knownDataFields);
         $requiredCnt = count($testInst->getRequiredFormFieldNames()) - 1; // don't include the record id field
@@ -311,7 +310,7 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $topInst->setNextInstrument($nextInst);
 
-        $topTestRcd = new InstrumentRecord($this->stubRedcapProj, $topInst, static::TEST_RCD_1_ID);
+        $topTestRcd = new InstrumentRecord($this->mockRedcapProj, $topInst, $this->stubLogger, static::TEST_RCD_1_ID);
 
         $result = $topTestRcd->getCompletedFieldCounts(static::TEST_EVENT_A);
 
@@ -353,7 +352,7 @@ class InstrumentRecordTest extends REDCapTestCase
         $demoInst->setNextInstrument($consentInst);
         $consentInst->setNextInstrument($historyInst);
 
-        $localTestObj = new InstrumentRecord($this->stubRedcapProj, $demoInst, static::TEST_RCD_1_ID);
+        $localTestObj = new InstrumentRecord($this->mockRedcapProj, $demoInst, $this->stubLogger, static::TEST_RCD_1_ID);
 
         $result = $localTestObj->getCumulativeFieldCounts(static::TEST_EVENT_A);
 
@@ -365,7 +364,7 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->useClassicProject();
         $localTestInstrument = $this->createDummyInstrument('test');
 
-        $localTestObj = new InstrumentRecord($this->stubRedcapProj,  $localTestInstrument, static::TEST_RCD_1_ID);
+        $localTestObj = new InstrumentRecord($this->mockRedcapProj,  $localTestInstrument, $this->stubLogger, static::TEST_RCD_1_ID);
 
         $fieldCounts = $localTestObj->getCompletedFieldCounts();
 
@@ -376,7 +375,7 @@ class InstrumentRecordTest extends REDCapTestCase
     public function testInitRequiredFieldCounts_events_noRecord() {
         $localTestInstrument = $this->createInstrument(static::DEMOGRAPHICS_FORM);
 
-        $localTestObj = new InstrumentRecord($this->stubRedcapProj,  $localTestInstrument, static::INVALID_TEST_RCD_ID);
+        $localTestObj = new InstrumentRecord($this->mockRedcapProj,  $localTestInstrument, $this->stubLogger, static::INVALID_TEST_RCD_ID);
 
         $fieldCounts = $localTestObj->getCompletedFieldCounts();
 
@@ -547,7 +546,7 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $testInst->setNextInstrument($nextInst);
 
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $testInst, $this->stubLogger);
         $nextObj = $instRcd->getNextInstrumentRecord();
 
         ReflectionHelper::setObjectProperty(Record::class, 'fieldArray', array( self::TEST_EVENT_A => array(self::SHORTNAME_FIELD => 'Bob', self::EMAIL_FIELD => self::BOB_EMAIL_ADDRESS)), $instRcd);
@@ -565,7 +564,7 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $testInst->setNextInstrument($nextInst);
 
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $testInst, $this->stubLogger);
         $nextObj = $instRcd->getNextInstrumentRecord();
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_2_ID, $instRcd);
@@ -604,7 +603,7 @@ class InstrumentRecordTest extends REDCapTestCase
 
         $testInst->setNextInstrument($nextInst);
 
-        $instRcd = new InstrumentRecord($this->stubRedcapProj, $testInst);
+        $instRcd = new InstrumentRecord($this->mockRedcapProj, $testInst, $this->stubLogger);
         $nextObj = $instRcd->getNextInstrumentRecord();
 
         ReflectionHelper::setObjectProperty(Record::class, 'recordId', self::TEST_RCD_3_ID, $instRcd);
@@ -643,8 +642,9 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $instRcd = new InstrumentRecord(
-            $this->stubRedcapProj,
+            $this->mockRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
+            $this->stubLogger,
             static::TEST_RCD_2_ID);
 
         $timestamp = $instRcd->getTimestamp();
@@ -661,8 +661,9 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $instRcd = new InstrumentRecord(
-            $this->stubRedcapProj,
+            $this->mockRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
+            $this->stubLogger,
             static::TEST_RCD_4_ID);
 
         $timestamp = $instRcd->getTimestamp();
@@ -681,8 +682,9 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $instRcd = new InstrumentRecord(
-            $this->stubRedcapProj,
+            $this->mockRedcapProj,
             $this->createInstrument(static::CONSENT_FORM),
+            $this->stubLogger,
             static::TEST_RCD_4_ID);
 
         $timestamp = $instRcd->getTimestamp();
@@ -707,8 +709,9 @@ class InstrumentRecordTest extends REDCapTestCase
         $this->setCallback('exportRecords', function() use ($testRcd) { return $testRcd; } );
 
         $instRcd = new InstrumentRecord(
-            $this->stubRedcapProj,
+            $this->mockRedcapProj,
             $this->createInstrument(static::HISTORY_FORM),
+            $this->stubLogger,
             static::TEST_RCD_3_ID);
 
         foreach ($testDateTimeArray as $event => $testTimestamp) {
@@ -717,6 +720,16 @@ class InstrumentRecordTest extends REDCapTestCase
             $this->assertNotNull($timestamp);
             $this->assertEquals($testTimestamp, $timestamp);
         }
+    }
+
+    protected function generateRandomDateTime(): \DateTime
+    {
+        $timestamp = rand(time()-(10 * 365 * 24 * 60 * 60), time()); // a random time between now and 10 years ago
+
+        $testDateTime = new \DateTime();
+        $testDateTime->setTimestamp($timestamp);
+
+        return $testDateTime;
     }
 
 }

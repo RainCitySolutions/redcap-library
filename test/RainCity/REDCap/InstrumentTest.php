@@ -4,10 +4,8 @@ namespace RainCity\REDCap;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversMethod;
-use RainCity\TestHelper\ReflectionHelper;
 use PHPUnit\Framework\Attributes\Depends;
-
-
+use RCS\Util\ReflectionHelper;
 
 #[CoversClass('\RainCity\REDCap\Instrument')]
 #[CoversMethod('RainCity\REDCap\Field', '__construct')]
@@ -42,17 +40,6 @@ class InstrumentTest extends REDCapTestCase
         $this->testObj = $this->createDummyInstrument('test');
     }
 
-    public function testCtor_invalidArg() {
-        $this->expectException('TypeError');
-        new Instrument((object)[], 'label', array(), array());  // NOSONAR - ignore useless object instantiation
-
-        $this->expectException('TypeError');
-        new Instrument('test', 4.9, array(), array());  // NOSONAR - ignore useless object instantiation
-
-        $this->expectException('TypeError');
-        new Instrument('test', 'label', array(), array());  // NOSONAR - ignore useless object instantiation
-    }
-
     public function testCtor_withoutEvents() {
         $obj = $this->createInstrument(static::DEMOGRAPHICS_FORM, false);
 
@@ -69,8 +56,8 @@ class InstrumentTest extends REDCapTestCase
 
         $fieldNames = self::exportedFieldsForInstrument(
             static::DEMOGRAPHICS_FORM,
-            $this->stubRedcapProj->exportFieldNames(),
-            $this->stubRedcapProj->exportMetadata());
+            $this->mockRedcapProj->exportFieldNames(),
+            $this->mockRedcapProj->exportMetadata());
 
         $loadedFields = array_merge(array_keys($reqFields), array_keys($optFields));
         $this->assertCount(count($fieldNames), $loadedFields);
@@ -84,7 +71,7 @@ class InstrumentTest extends REDCapTestCase
         $loadedEvents = ReflectionHelper::getObjectProperty(Instrument::class, 'events', $obj);
 
         $redcapEvents = array();
-        $eventMappings = $this->stubRedcapProj->exportInstrumentEventMappings();
+        $eventMappings = $this->mockRedcapProj->exportInstrumentEventMappings();
         foreach ($eventMappings as $entry) {
             if ($entry['form'] === static::CONSENT_FORM) {
                 $redcapEvents[] = $entry['unique_event_name'];

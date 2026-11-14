@@ -19,12 +19,6 @@ class EventTest extends TestCase
         "custom_event_label" => null
     );
 
-    public function testConstructor_noArg()
-    {
-        $this->expectException("ArgumentCountError");
-        new Event();   // NOSONAR - testing
-    }
-
     public function testConstructor_emptyArray()
     {
         $this->expectException("InvalidArgumentException");

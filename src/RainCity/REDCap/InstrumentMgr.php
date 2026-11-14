@@ -2,41 +2,34 @@
 declare(strict_types = 1);
 namespace RainCity\REDCap;
 
-use RainCity\DataCache;
-use RainCity\MethodLogger;
-use RainCity\ScopeTimer;
-use RainCity\Logging\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use RCS\Logging\MethodLogger;
+use RCS\Logging\ScopeTimer;
+use RCS\Logging\Timer;
 
 class InstrumentMgr
 {
-    private LoggerInterface $logger;
-    private RedCapProject $redcapProject;
-    private ?CacheInterface $cache;
-
     /** @var Instrument[] Associative array where the key is the form name */
-    private array $instruments = array();
+    private array $instruments = [];
 
-    public function __construct(RedCapProject $redcapProject, DataCache $cache = null)
+    public function __construct(
+        private RedCapProject $redcapProject, 
+        private CacheInterface $cache,
+        private LoggerInterface $logger
+        )
     {
-        $this->logger = Logger::getLogger(get_class($this));
-        $this->redcapProject = $redcapProject;
-        $this->cache = $cache;
-
         $this->loadInstruments();
     }
 
     private function loadInstruments(): void
     {
-        $methodLogger = new MethodLogger(); //NOSONAR
+        $methodLogger = new MethodLogger($this->logger); //NOSONAR
 
-        $this->instruments = isset($this->cache) ?
-            $this->cache->get('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl()) :
-            [];
+        $this->instruments = $this->cache->get('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl(), []);
 
         if (empty($this->instruments)) {
-            $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap instruments: %s');   // NOSONAR
+            $scopeTimer = new ScopeTimer($this->logger, new Timer(), 'Time to export REDCap instruments: %s');   // NOSONAR
 
             $localInstruments = $this->redcapProject->exportInstruments();
             foreach ($localInstruments as $name => $label) {
@@ -44,7 +37,7 @@ class InstrumentMgr
             }
             unset($localInstruments);
 
-            $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap metadata: %s');
+            $scopeTimer = new ScopeTimer($this->logger, new Timer(), 'Time to export REDCap metadata: %s');
 
             $metadata = $this->redcapProject->exportMetadata();
             foreach($metadata as $field) {
@@ -54,7 +47,7 @@ class InstrumentMgr
             }
             unset($metadata);
 
-            $scopeTimer = new ScopeTimer($this->logger, 'Time to export REDCap event mapping: %s');
+            $scopeTimer = new ScopeTimer($this->logger, new Timer(), 'Time to export REDCap event mapping: %s');
 
             $eventdata = $this->redcapProject->exportInstrumentEventMappings();
             foreach($eventdata as $entry) {
@@ -63,9 +56,7 @@ class InstrumentMgr
             }
             unset($eventdata);
 
-            if (isset($this->cache)) {
-                $this->cache->set('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl(), $this->instruments);
-            }
+            $this->cache->set('RedcapInstruments-'.$this->redcapProject->getConnection()->getUrl(), $this->instruments);
         } else {
             // Loaded from the cache so initialize references to objects
             $this->initializeInstrumentReferences($this->instruments);
