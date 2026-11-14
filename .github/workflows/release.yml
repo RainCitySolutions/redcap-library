@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   repository_dispatch:
-    types: [new_php_lib_event]
+    types: [new_rcs_wp_lib_event]
 
 jobs:
   build:
