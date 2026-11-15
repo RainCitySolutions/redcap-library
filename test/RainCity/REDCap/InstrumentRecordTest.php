@@ -47,7 +47,6 @@ use RCS\Util\ReflectionHelper;
 #[CoversMethod('RainCity\REDCap\Record', 'isLoaded')]
 #[CoversMethod('RainCity\REDCap\Record', 'isValidEvent')]
 #[CoversMethod('RainCity\REDCap\Record', 'isValidField')]
-#[CoversMethod('RainCity\REDCap\Record', 'loadEventRecord')]
 #[CoversMethod('RainCity\REDCap\Record', 'loadRecord')]
 #[CoversMethod('RainCity\REDCap\Record', 'loadRecordById')]
 #[CoversMethod('RainCity\REDCap\Record', 'privLoadRecord')]

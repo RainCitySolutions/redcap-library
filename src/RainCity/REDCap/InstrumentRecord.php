@@ -16,6 +16,9 @@ class InstrumentRecord extends Record
 {
     private ?InstrumentRecord $nextInstrumentRcd = null;
 
+    /** @var array<string, true>|null Lazily built lookup set of this instrument's field names */
+    private ?array $instrumentFieldSet = null;
+
     /**
      * @var SurveyStatus|SurveyStatus[]
      *  A SurveyStatus object if the instrument is part of a classic project.
@@ -490,21 +493,34 @@ class InstrumentRecord extends Record
     }
 
     /**
+     * Loads this record, then every record chained after it, from data that
+     * Record::loadRecord() has already validated (once, not once per link).
      *
      * {@inheritDoc}
-     * @see \RainCity\REDCap\Record::loadRecord()
+     * @see \RainCity\REDCap\Record::importValidatedRecord()
      */
-    public function loadRecord (array $rcd): bool
+    protected function importValidatedRecord (array $rcd): void
     {
-        $result = parent::loadRecord($rcd);
+        parent::importValidatedRecord($rcd);
 
-        if ($this->nextInstrumentRcd) {
-            $this->nextInstrumentRcd->loadRecord($rcd);
-        }
+        $this->nextInstrumentRcd?->importValidatedRecord($rcd);
 
         $this->initSurveyStatus();
+    }
 
-        return $result;
+    /**
+     * Only fields belonging to this instrument are stored here. Fields for
+     * later instruments are picked up by the chained record, which gets the
+     * same data in importValidatedRecord().
+     *
+     * {@inheritDoc}
+     * @see \RainCity\REDCap\Record::isLoadableField()
+     */
+    protected function isLoadableField (string $field): bool
+    {
+        $this->instrumentFieldSet ??= array_fill_keys($this->instrument->getAllFieldNames(), true);
+
+        return isset($this->instrumentFieldSet[$field]);
     }
 
     private function initSurveyStatus(): void
