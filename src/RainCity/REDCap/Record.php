@@ -733,8 +733,6 @@ class Record
      */
     public function getREDCapArray(?string $event = null): array
     {
-        $methodLogger = new \RCS\Logging\MethodLogger($this->logger);
-
         $result = [];
 
         if ($this->isValidEvent($event)) {

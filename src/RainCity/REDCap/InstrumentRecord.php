@@ -87,7 +87,7 @@ class InstrumentRecord extends Record
      *      when no event is provided, the event is not associated with the
      *      instrument or the record is not tracking the event.
      */
-    public function getStatus(string $event = null): SurveyStatus
+    public function getStatus(?string $event = null): SurveyStatus
     {
         $surveyStatus = null;
 
@@ -456,7 +456,7 @@ class InstrumentRecord extends Record
      * {@inheritDoc}
      * @see \RainCity\REDCap\Record::getREDCapArray()
      */
-    public function getREDCapArray(string $event = null): array
+    public function getREDCapArray(?string $event = null): array
     {
         $result = parent::getREDCapArray($event);
         if (isset($this->nextInstrumentRcd)) {
