@@ -1,12 +1,13 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace RainCity\REDCap;
 
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Lock\LockFactory;
 use IU\PHPCap\PhpCapException;
-use RCS\Logging\Timer;
 
 /**
  * Extension of \IU\PHPCap\RedCapProject
@@ -40,8 +41,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
         private CacheInterface $cache,
         private LockFactory $lockFactory,
         private LoggerInterface $logger
-        )
-    {
+    ) {
         parent::__construct(
             $config->getApiUrl(),
             $config->getApiToken(),
@@ -49,13 +49,13 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             $config->getCaCertificateFile(),
             $config->getErrorHandler() ?? new RedCapErrorHandler($logger),
             $config->getConnection()
-            );
+        );
 
         $this->ttl = self::DEFAULT_TTL;
         $this->cacheKey = hash(
             'sha256',
             parse_url($this->getConnection()->getUrl(), PHP_URL_HOST) . '-' . $config->getApiToken()
-            );
+        );
     }
 
     /**
@@ -85,7 +85,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
         assert(
             is_null($seconds) || 0 < $seconds,
             'Number of seconds passed to setCacheTTL must be null or greater that 0'
-            );
+        );
 
         $this->ttl = $seconds ?? self::DEFAULT_TTL;
     }
@@ -129,11 +129,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
                 if (!isset($result)) {
                     $scopeTimer = new \RCS\Logging\ScopeTimer(
                         $this->logger,
-                        new Timer(),
-                        'Time to call REDCap function '.$func.'(): %s'
-                        );
+                        'Time to call REDCap function ' . $func . '(): %s'
+                    );
 
-                    $result = call_user_func_array(parent::class .'::' .$func, $args);
+                    $result = call_user_func_array(parent::class . '::' . $func, $args);
 
                     if (isset($result)) {
                         $this->cache->set($cacheKey, $result, $this->ttl);
@@ -142,8 +141,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
             } else {
                 $this->logger->critical('Unable to obtain lock while executing REDCap API request');
             }
-        }
-        finally {
+        } finally {
             $lock->release();
         }
 
@@ -155,17 +153,16 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
      * {@inheritDoc}
      * @see \IU\PHPCap\RedCapProject::exportRedcapVersion()
      */
-    public function exportRedcapVersion() {
-       $result = null;
+    public function exportRedcapVersion()
+    {
+        $result = null;
 
-       try {
-           $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-       }
-       catch (PhpCapException $exception) {
+        try {
+            $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
+        } catch (PhpCapException $exception) {
+        }
 
-       }
-
-       return $result;
+        return $result;
     }
 
 
@@ -182,12 +179,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             if ('php' == $format) {
                 $result = array();
-            }
-            else {
+            } else {
                 $result = '{}';
             }
         }
@@ -210,12 +205,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             if ('php' == $format) {
                 $result = array();
-            }
-            else {
+            } else {
                 $result = '{}';
             }
         }
@@ -239,8 +232,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             /* Special case:
              * RedCapProject::getRecordIdFieldName() uses exportMetadata to
              * determine the record id field name. If an exception occurs
@@ -273,8 +265,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
         $allRecords = null,
         $compactDisplay = null,
         $repeatInstance = null
-        )
-    {
+    ) {
         $result = '';
 
         try {
@@ -286,9 +277,8 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
                 $allRecords,
                 $compactDisplay,
                 $repeatInstance
-                );
-        }
-        catch (PhpCapException $exception) {
+            );
+        } catch (PhpCapException $exception) {
         }
 
         return $result;
@@ -306,12 +296,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             if ('php' == $format) {
                 $result = array();
-            }
-            else {
+            } else {
                 $result = '{}';
             }
         }
@@ -347,38 +335,36 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
         $decimalCharacter = null,
         $exportBlankForGrayFormStatus = false
     ) {
-            $result = null;
+        $result = null;
 
-            try {
-                $result = parent::exportRecords(
-                    $format,
-                    $type,
-                    $recordIds,
-                    $fields,
-                    $forms,
-                    $events,
-                    $filterLogic,
-                    $rawOrLabel,
-                    $rawOrLabelHeaders,
-                    $exportCheckboxLabel,
-                    $exportSurveyFields,
-                    $exportDataAccessGroups,
-                    $dateRangeBegin,
-                    $dateRangeEnd,
-                    $csvDelimiter,
-                    $decimalCharacter
-                    );
+        try {
+            $result = parent::exportRecords(
+                $format,
+                $type,
+                $recordIds,
+                $fields,
+                $forms,
+                $events,
+                $filterLogic,
+                $rawOrLabel,
+                $rawOrLabelHeaders,
+                $exportCheckboxLabel,
+                $exportSurveyFields,
+                $exportDataAccessGroups,
+                $dateRangeBegin,
+                $dateRangeEnd,
+                $csvDelimiter,
+                $decimalCharacter
+            );
+        } catch (PhpCapException $exception) {
+            if ('php' == $format) {
+                $result = array();
+            } else {
+                $result = '{}';
             }
-            catch (PhpCapException $exception) {
-                if ('php' == $format) {
-                    $result = array();
-                }
-                else {
-                    $result = '{}';
-                }
-            }
+        }
 
-            return $result;
+        return $result;
     }
 
     /**
@@ -391,8 +377,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
         }
 
         return $result;
@@ -408,8 +393,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
         }
 
         return $result;
@@ -425,8 +409,7 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
         }
 
         return $result;
@@ -443,12 +426,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             if ('php' == $format) {
                 $result = array();
-            }
-            else {
+            } else {
                 $result = '{}';
             }
         }
@@ -471,12 +452,10 @@ class RedCapProject extends \IU\PHPCap\RedCapProject
 
         try {
             $result = $this->maybeCallParentFunction(__FUNCTION__, func_get_args());
-        }
-        catch (PhpCapException $exception) {
+        } catch (PhpCapException $exception) {
             if ('php' == $format) {
                 $result = array();
-            }
-            else {
+            } else {
                 $result = '{}';
             }
         }
